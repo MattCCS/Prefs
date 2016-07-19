@@ -1,0 +1,6 @@
+#!/bin/bash
+
+DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd ) # directory of this script
+
+scp ~/.bash_profile $DIR
+echo "Cannot pull iTerm2 profile automatically!  Remember to export it!"
