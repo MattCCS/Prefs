@@ -17,9 +17,10 @@ alias gitt='git tag --list'
 alias gitb='git branch --list'
 alias gitl='git log'
 alias gitl1='git log --pretty=oneline --abbrev-commit'
+alias gitlf="git log --graph --pretty=format:'%C(yellow)%h %Cred%ad %Cblue%an%Cgreen%d %Creset%s' --date=short"
 
 # modify
-alias gitc='git commit'
+alias gitco='git commit'
 alias gitstash='git stash save'
 alias gpoh='git push origin head'
 alias JESUSTAKETHEWHEEL='git reset --hard origin/master; git pull origin master'
