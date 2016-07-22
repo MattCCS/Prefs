@@ -2,6 +2,7 @@
 ### meta commands
 alias reload='echo "[+] ~/.bash_profile"; source ~/.bash_profile'
 alias nbp='nano ~/.bash_profile'
+alias vbp='vi ~/.bash_profile'
 
 alias shhh='pmset sleepnow'
 
@@ -9,6 +10,10 @@ alias shhh='pmset sleepnow'
 alias beep="echo -e '\a'"
 alias k='kill %-'
 alias o='open .'
+md () { markdown "$1" > "$1".html || echo "Must `brew install markdown`!" }
+export -f md 1> /dev/null
+mdo () { md "$1" && open "$1".html }
+export -f mdo 1> /dev/null
 
 ### git commands
 # show
@@ -19,7 +24,14 @@ alias gitt='git tag --list'
 alias gitb='git branch --list'
 alias gitl='git log'
 alias gitl1='git log --pretty=oneline --abbrev-commit'
-alias gitlf="git log --graph --pretty=format:'%C(yellow)%h %Cred%ad %Cblue%an%Cgreen%d %Creset%s' --date=short"
+alias MYBRANCH="git rev-parse --abbrev-ref HEAD"
+
+# special git logs
+gitlog () { local pretty="$(python ~/Prefs/gitlogpretty.py "$1")"; shift; git log --pretty=format:"$pretty" "$@" }
+export -f gitlog 1> /dev/null
+alias gitlf="gitlog hdabs --date=short"
+alias gitlfg="gitlog hdabs --date=short --graph"
+alias gitly="gitlog hdabs --since=1.day.ago --until=6am --all --author='Matthew Cotton' --date=short"
 
 # modify
 alias gpoh='git push origin head'
