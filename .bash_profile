@@ -11,6 +11,9 @@ alias shhh='pmset sleepnow'
 alias beep="echo -e '\a'"
 alias k='kill %-'
 alias o='open .'
+alias subl='open -a "Sublime Text"'
+
+### markdown
 md () { markdown "$1" > "$1".html || (echo "Must `brew install markdown`!" && exit 1) }
 export -f md 1> /dev/null
 mdo () { md "$1" && open "$1".html }
@@ -40,7 +43,6 @@ alias gitly="gitlog hdabs --since=1.day.ago --until=6am --all --author='Matthew 
 
 # modify
 alias gpoh='git push origin head'
-alias gitco='git commit'
 alias gitstash='git stash save'
 alias JESUSTAKETHEWHEEL='git reset --hard origin/master; git pull origin master'
 
