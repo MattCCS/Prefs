@@ -23,6 +23,7 @@ export -f mdo 1> /dev/null
 # show
 alias gits='git status'
 alias gitd='git diff'
+alias gitds='git diff --staged'
 alias giti='nano .gitignore'
 alias gitt='git tag --list'
 alias gitb='git branch --list'
@@ -30,15 +31,13 @@ alias gitb='git branch --list'
 alias git_current_branch='git rev-parse --abbrev-ref HEAD'
 alias gpcb='git pull origin "$(git_current_branch)"'
 
-alias gitl='git log'
-alias gitl1='git log --pretty=oneline --abbrev-commit'
-
+alias gitlf='git log'
 
 # special git logs
 gitlog () { local pretty="$(python ~/Prefs/gitlogpretty.py "$1")"; shift; git log --pretty=format:"$pretty" "$@" }
 export -f gitlog 1> /dev/null
-alias gitlf="gitlog hdabs --date=short"
-alias gitlfg="gitlog hdabs --date=short --graph"
+alias gitl="gitlog hdabs --date=short"
+alias gitlg="gitlog hdabs --date=short --graph"
 alias gitly="gitlog hdabs --since=1.day.ago --until=6am --all --author='Matthew Cotton' --date=short"
 
 # modify
