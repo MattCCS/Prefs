@@ -27,6 +27,7 @@ alias gitds='git diff --staged'
 alias giti='nano .gitignore'
 alias gitt='git tag --list'
 alias gitb='git branch --list'
+alias gitw='git whatchanged'
 
 alias git_current_branch='git rev-parse --abbrev-ref HEAD'
 alias gpcb='git pull origin "$(git_current_branch)"'
