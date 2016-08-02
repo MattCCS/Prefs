@@ -14,9 +14,9 @@ alias o='open .'
 alias subl='open -a "Sublime Text"'
 
 ### markdown
-md () { markdown "$1" > "$1".html || (echo "Must `brew install markdown`!" && exit 1) }
+md () { markdown "$1" > "$1".html || echo "Must `brew install markdown`!" && exit 1; }
 export -f md 1> /dev/null
-mdo () { md "$1" && open "$1".html }
+mdo () { md "$1" && open "$1".html; }
 export -f mdo 1> /dev/null
 
 ### git commands
@@ -35,7 +35,7 @@ alias gpcb='git pull origin "$(git_current_branch)"'
 alias gitlf='git log'
 
 # special git logs
-gitlog () { local pretty="$(python ~/Prefs/gitlogpretty.py "$1")"; shift; git log --pretty=format:"$pretty" "$@" }
+gitlog () { local pretty="$(python ~/Prefs/gitlogpretty.py "$1")"; shift; git log --pretty=format:"$pretty" "$@"; }
 export -f gitlog 1> /dev/null
 alias gitl="gitlog hdabs --date=short"
 alias gitlg="gitlog hdabs --date=short --graph"
