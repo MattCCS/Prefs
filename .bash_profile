@@ -14,7 +14,7 @@ alias o='open .'
 alias subl='open -a "Sublime Text"'
 
 ### markdown
-md () { markdown "$1" > "$1".html || echo "Must `brew install markdown`!" && exit 1; }
+md () { markdown "$1" > "$1".html || echo "Must `brew install markdown`!" }
 export -f md 1> /dev/null
 mdo () { md "$1" && open "$1".html; }
 export -f mdo 1> /dev/null
