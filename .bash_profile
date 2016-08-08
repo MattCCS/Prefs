@@ -42,6 +42,8 @@ alias gitlg="gitlog hdabs --date=short --graph"
 alias gitly="gitlog hdabs --since=1.day.ago --until=6am --all --author='Matthew Cotton' --date=short"
 
 # modify
+alias gitcom='git commit'
+alias gitch='git checkout'
 alias gpoh='git push origin head'
 alias gitstash='git stash save'
 alias JESUSTAKETHEWHEEL='git reset --hard origin/master; git pull origin master'
