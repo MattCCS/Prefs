@@ -1,16 +1,17 @@
+PATH=$PATH:/usr/local/bin
 
 ### meta commands
 alias reload='echo "[+] ~/.bash_profile"; source ~/.bash_profile'
 alias nbp='nano ~/.bash_profile'
 alias vbp='vi ~/.bash_profile'
 
-### mac/darwin
-alias shhh='pmset sleepnow'
-
 ### virtualenv
 alias a='. bin/activate'
 alias d='deactivate'
 alias virtualenv3='virtualenv -p python3'
+
+### mac/darwin
+alias shhh='pmset sleepnow'
 
 ### shortcuts
 alias beep="echo -e '\a'"
