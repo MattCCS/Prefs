@@ -7,6 +7,11 @@ alias vbp='vi ~/.bash_profile'
 ### mac/darwin
 alias shhh='pmset sleepnow'
 
+### virtualenv
+alias a='. bin/activate'
+alias d='deactivate'
+alias virtualenv3='virtualenv -p python3'
+
 ### shortcuts
 alias beep="echo -e '\a'"
 alias k='kill %-'
