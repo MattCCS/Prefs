@@ -65,6 +65,12 @@ export -f grao 1> /dev/null
 graome () { grao "MattCCS" "$1"; }
 export -f graome 1> /dev/null
 
+gsadd () { local user="$1"; local repo="$2"; shift; shift; git submodule add git@github.com:"$user"/"$repo".git "$@"; }
+export -f gsadd 1> /dev/null
+gsaddme () { local repo="$1"; shift; gsadd "MattCCS" "$repo" "$@"; }
+export -f gsaddme 1> /dev/null
+alias gsuir="git submodule update --init --recursive"
+
 # autocorrect
 alias gti='echo "Did you mean *git*?"; git'
 alias gut='echo "Did you mean *git*?"; git'
