@@ -5,6 +5,10 @@ alias reload='echo "[+] ~/.bash_profile"; source ~/.bash_profile'
 alias nbp='nano ~/.bash_profile'
 alias vbp='vi ~/.bash_profile'
 
+### python
+alias unit='python -m unittest'
+alias unitd='python -m unittest discover'
+
 ### virtualenv
 alias a='. bin/activate'
 alias d='deactivate'
@@ -38,6 +42,7 @@ alias gitbl='git blame'
 
 alias git_current_branch='git rev-parse --abbrev-ref HEAD'
 alias gpcb='git pull origin "$(git_current_branch)"'
+alias gitfe='git fetch'
 
 alias gitlf='git log'
 
@@ -51,8 +56,11 @@ alias gitly="gitlog hdabs --since=1.day.ago --until=6am --all --author='Matthew 
 # modify
 alias gitcom='git commit'
 alias gitch='git checkout'
+alias gitbr='git branch'
 alias gpoh='git push origin head'
 alias gitstash='git stash save'
+alias gitm='git merge --no-ff'
+alias gitmff='git merge --ff'
 alias JESUSTAKETHEWHEEL='git reset --hard origin/master; git pull origin master'
 
 # repos
