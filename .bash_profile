@@ -61,6 +61,7 @@ alias gpoh='git push origin head'
 alias gitstash='git stash save'
 alias gitm='git merge --no-ff'
 alias gitmff='git merge --ff'
+alias gitrbi='git rebase --interactive'
 alias JESUSTAKETHEWHEEL='git reset --hard origin/master; git pull origin master'
 
 # repos
