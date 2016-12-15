@@ -4,10 +4,20 @@ PATH=$PATH:/usr/local/bin
 alias reload='echo "[+] ~/.bash_profile"; source ~/.bash_profile'
 alias nbp='nano ~/.bash_profile'
 alias vbp='vi ~/.bash_profile'
+alias sbp='subl ~/.bash_profile'
+
+### Lynx/Lynxlet
+alias lynx='lynx -accept_all_cookies -nopause'
+WWW_HOME='http://www.google.com/'
+export WWW_HOME
 
 ### python
 alias unit='python -m unittest'
 alias unitd='python -m unittest discover'
+alias rmpyc='find . -name \*.pyc -delete'
+alias json='python -m json.tool'
+alias pip3=/usr/local/Cellar/python3/3.5.2_1/bin/pip3
+alias pysh=/Users/mcotton/Code/pysh/bin/pysh
 
 ### virtualenv
 alias a='. bin/activate'
@@ -18,10 +28,12 @@ alias virtualenv3='virtualenv -p python3'
 alias shhh='pmset sleepnow'
 
 ### shortcuts
+alias ccd="cd; cd"
 alias beep="echo -e '\a'"
 alias k='kill %-'
 alias o='open .'
 alias subl='open -a "Sublime Text"'
+alias iwillfindyou='find / -name'
 
 ### markdown
 md () { markdown "$1" > "$1".html || echo "Must `brew install markdown`!"; }
@@ -63,6 +75,7 @@ alias gitstash='git stash save'
 alias gitm='git merge --no-ff'
 alias gitmff='git merge --ff'
 alias gitrbi='git rebase --interactive'
+alias backsosoon='git reset --soft HEAD~1'
 alias JESUSTAKETHEWHEEL='git reset --hard origin/master; git pull origin master'
 
 # repos
