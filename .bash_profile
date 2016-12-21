@@ -75,7 +75,8 @@ alias gitstash='git stash save'
 alias gitm='git merge --no-ff'
 alias gitmff='git merge --ff'
 alias gitrbi='git rebase --interactive'
-alias backsosoon='git reset --soft HEAD~1'
+alias notakebacks='git reset --soft HEAD~1'
+alias backsosoon=notakebacks
 alias JESUSTAKETHEWHEEL='git reset --hard origin/master; git pull origin master'
 
 # repos
