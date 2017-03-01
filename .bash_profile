@@ -1,10 +1,26 @@
 PATH=$PATH:/usr/local/bin
 
+# twist
+PATH=$PATH:/Users/matt/Library/Python/3.6/bin/
+alias thost='twist web --path'
+
+# register/my
+PATH=$PATH:/usr/local/bin/registered
+alias reg='register'
+alias my='register'
+
 ### meta commands
 alias reload='echo "[+] ~/.bash_profile"; source ~/.bash_profile'
 alias nbp='nano ~/.bash_profile'
 alias vbp='vi ~/.bash_profile'
 alias sbp='subl ~/.bash_profile'
+
+### Wayback Machine / Archive.org
+alias wayback='wayback_machine_downloader'
+
+### cracking
+alias hc='hashcat'
+alias hch='hc --help'
 
 ### Lynx/Lynxlet
 alias lynx='lynx -accept_all_cookies -nopause'
@@ -12,11 +28,12 @@ WWW_HOME='http://www.google.com/'
 export WWW_HOME
 
 ### python
+alias python='python3'
 alias unit='python -m unittest'
 alias unitd='python -m unittest discover'
 alias rmpyc='find . -name \*.pyc -delete'
 alias json='python -m json.tool'
-alias pip3=/usr/local/Cellar/python3/3.5.2_1/bin/pip3
+#alias pip3=/usr/local/Cellar/python3/3.5.2_1/bin/pip3
 alias pysh=/Users/mcotton/Code/pysh/bin/pysh
 
 ### virtualenv
@@ -70,6 +87,7 @@ alias gitcom='git commit'
 alias gitch='git checkout'
 alias gitbr='git branch'
 alias gpoh='git push origin head'
+alias gpoht='gpoh --tags'
 alias gpohi='git push -u origin head'
 alias gitstash='git stash save'
 alias gitm='git merge --no-ff'
@@ -102,5 +120,8 @@ alias gut='echo "Did you mean *git*?"; git'
 alias gtu='echo "Now this is just a disgrace."'
 
 # personal commands -- private ;)
+alias nbpp='nano ~/.bash_profile_private'
+alias sbpp='subl ~/.bash_profile_private'
 source ~/.bash_profile_private 2> /dev/null && echo "[+] ~/.bash_profile_private" || echo "[ ] ~/.bash_profile_private"
 source ~/.bash_profile_hubspot 2> /dev/null && echo "[+] ~/.bash_profile_hubspot" || echo "[ ] ~/.bash_profile_hubspot"
+
