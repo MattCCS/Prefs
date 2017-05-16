@@ -8,6 +8,7 @@ alias thost='twist web --path'
 PATH=$PATH:/usr/local/bin/registered
 alias reg='register'
 alias my='register'
+alias unreg='unregister'
 
 ### meta commands
 alias reload='echo "[+] ~/.bash_profile"; source ~/.bash_profile'
@@ -28,7 +29,7 @@ WWW_HOME='http://www.google.com/'
 export WWW_HOME
 
 ### python
-alias python='python3'
+alias p='python3'
 alias unit='python -m unittest'
 alias unitd='python -m unittest discover'
 alias rmpyc='find . -name \*.pyc -delete'
@@ -45,12 +46,14 @@ alias virtualenv3='virtualenv -p python3'
 alias shhh='pmset sleepnow'
 
 ### shortcuts
-alias ccd="cd; cd"
 alias beep="echo -e '\a'"
 alias k='kill %-'
 alias o='open .'
 alias subl='open -a "Sublime Text"'
 alias iwillfindyou='find / -name'
+cdd () { cd `dirname "$1"`; }
+export -f cdd 1> /dev/null
+alias wgeta='wget --header="Accept: text/html" --user-agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10.8; rv:21.0) Gecko/20100101 Firefox/21.0"'
 
 ### markdown
 md () { markdown "$1" > "$1".html || echo "Must `brew install markdown`!"; }
