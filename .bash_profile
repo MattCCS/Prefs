@@ -88,9 +88,12 @@ alias git_current_branch='git rev-parse --abbrev-ref HEAD'
 
 # special git logs
 _gitlog () { local pretty="$(python ~/Prefs/gitlogpretty.py "$1")"; shift; git log --pretty=format:"$pretty" "$@"; }; export -f _gitlog 1> /dev/null
-alias gitlf='git log'
-alias gitl="_gitlog hdabs --date=short"
-alias gitlg="_gitlog hdabs --date=short --graph"
+alias gitll='git log'
+alias gitls="_gitlog hdabs --date=short"
+alias gitlg="_gitlog hdabs --date=short --graph --all"
+alias gitlgh="_gitlog hdabs --date=short --graph"
+alias gitl='gitlg'
+alias gitlh='gitlgh'
 alias gitly="_gitlog hdabs --since=1.day.ago --until=6am --all --author='Matthew Cotton' --date=short"
 
 # modify
