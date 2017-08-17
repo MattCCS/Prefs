@@ -85,7 +85,7 @@ alias gitdl='git diff HEAD^1'
 alias gits='git status'
 alias gitt='git tag --list'
 alias gitw='git whatchanged'
-alias git_current_branch='git rev-parse --abbrev-ref HEAD'
+# alias git_current_branch='git rev-parse --abbrev-ref HEAD'
 
 # special git logs
 _gitlog () { local pretty="$(python ~/Prefs/gitlogpretty.py "$1")"; shift; git log --pretty=format:"$pretty" "$@"; }; export -f _gitlog 1> /dev/null
@@ -113,7 +113,7 @@ alias gitmerff='git merge --ff'
 alias gitrbi='git rebase --interactive'
 alias gitstash='git stash save'
 alias gitta='git tag -a'
-alias gpcb='git pull origin "$(git_current_branch)"'
+alias gpcb='git pull'
 alias gpoh='git push origin head'
 alias gpoht='gpoh --tags'
 alias gpohi='git push -u origin head'
