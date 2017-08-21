@@ -55,6 +55,7 @@ alias pysh=/Users/mcotton/Code/pysh/bin/pysh
 ### virtualenv
 alias a='. bin/activate'
 alias d='deactivate'
+alias virtualenv2='virtualenv -p python2'
 alias virtualenv3='virtualenv -p python3'
 
 ### mac/darwin
@@ -66,6 +67,7 @@ alias beep="echo -e '\a'"
 alias k='kill %-'
 alias o='open .'
 alias subl='open -a "Sublime Text"'
+alias refreshanaconda="kill $(ps ax | grep anaconda | grep jsonserver | awk '{print $1}')"
 alias iwillfindyou='find / -name'
 cdd () { cd `dirname "$1"`; }; export -f cdd 1> /dev/null
 alias wgeta='wget --header="Accept: text/html" --user-agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10.8; rv:21.0) Gecko/20100101 Firefox/21.0"'
@@ -77,6 +79,7 @@ mdo () { md "$1" && open "$1".html; }; export -f mdo 1> /dev/null
 
 ### git commands
 # show
+git config --global core.pager 'less -S'  # truncate lines that go too long
 alias gitb='git branch --list'
 alias gitbl='git blame'
 alias gitd='git diff'
@@ -88,18 +91,41 @@ alias gitw='git whatchanged'
 # alias git_current_branch='git rev-parse --abbrev-ref HEAD'
 
 # special git logs
-_gitlog () { local pretty="$(python ~/Prefs/gitlogpretty.py "$1")"; shift; git log --pretty=format:"$pretty" "$@"; }; export -f _gitlog 1> /dev/null
-alias gitll='git log'
-alias gitls="_gitlog hdabs --date=short"
-alias gitlg="_gitlog hdabs --date=short --graph --all"
-alias gitlgh="_gitlog hdabs --date=short --graph"
-alias gitl='gitlg'
-alias gitlh='gitlgh'
-alias gitly="_gitlog hdabs --since=1.day.ago --until=6am --all --author='Matthew Cotton' --date=short"
+alias gitlg='git log'  # log
+alias gitlp='git log --date=short --pretty=format:"%C(yellow)%h %Cred%ad %Cblue%an %C(auto)%d %Creset%s"'  # pretty
+alias gitlf='gitlp'  # flat
+alias gitlh='gitlp --graph'  # here
+alias gitla='gitlp --graph --all'  # all
+alias gitlme='gitla --author="$(git config user.name)"'  # me
+alias gitly="gitlf --since=1.day.ago"  # yesterday
+alias gitl="gitla"  # <-- personal favorite
+
+gitaheadbehind () {
+    [ -z $1 ] && remote="master" || remote=$1
+    git for-each-ref --format="%(refname:short)" refs/heads | \
+    while read local; do
+        git rev-list --left-right ${local}...${remote} -- 2>/dev/null >/tmp/git_upstream_status_delta || continue
+        [ "$local" = "$remote" ] && continue
+
+        AHEAD=$(grep -c '^<' /tmp/git_upstream_status_delta)
+        BEHIND=$(grep -c '^>' /tmp/git_upstream_status_delta)
+
+        if [[ "$AHEAD" -eq "0" && "$BEHIND" -eq "0" ]]; then
+            TEXT="is up-to-date with"
+        elif [[ "$AHEAD" -eq "0" ]]; then
+            TEXT="(\e[92mbehind $BEHIND\e[0m)"
+        elif [[ "$BEHIND" -eq "0" ]]; then
+            TEXT="(\e[91mahead $AHEAD\e[0m)"
+        else
+            TEXT="(\e[93mahead $AHEAD, behind $BEHIND\e[0m)"
+        fi
+
+        echo "$local $TEXT $remote"
+    done
+}; export -f gitaheadbehind 1> /dev/null
 
 # modify
 #alias gitau='git add -u'
-#alias gitassume='git update-index --assume-unchanged'
 alias gitbr='git branch'
 alias gitcom='git commit'
 alias gitcoma='git commit --amend'
@@ -113,7 +139,9 @@ alias gitmerff='git merge --ff'
 alias gitrbi='git rebase --interactive'
 alias gitstash='git stash save'
 alias gitta='git tag -a'
+#alias gituntrack='git update-index --assume-unchanged'
 alias gpcb='git pull'
+# alias gpcb='git pull origin "$(git_current_branch)"'
 alias gpoh='git push origin head'
 alias gpoht='gpoh --tags'
 alias gpohi='git push -u origin head'
@@ -147,7 +175,8 @@ source ~/.bash_profile_racap 2> /dev/null && echo "[+] ~/.bash_profile_racap"
 
 # t () { eval $@; }
 
-_gitkey () { local key="$1"; shift; eval 'GIT_SSH_COMMAND="ssh -i ~/.ssh/$key"' $@; }; export -f gitkey 1> /dev/null
+_gitkey () { local key="$1"; shift; eval 'GIT_SSH_COMMAND="ssh -i ~/.ssh/$key"' $@; }; export -f _gitkey 1> /dev/null
+alias gitkey1='_gitkey id_rsa'
 alias gitkey2='_gitkey id2_rsa'
 
 [[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm" # Load RVM into a shell session *as a function*
