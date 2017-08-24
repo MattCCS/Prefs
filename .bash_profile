@@ -21,6 +21,7 @@ alias reload='echo "[+] ~/.bash_profile"; source ~/.bash_profile'
 alias nbp='nano ~/.bash_profile'
 alias vbp='vi ~/.bash_profile'
 alias sbp='subl ~/.bash_profile'
+alias snet='subl ~/.netrc'
 
 ### notes
 alias notes='cd ~/Documents/Notes'
@@ -78,27 +79,70 @@ md () { markdown "$1" > "$1".html || echo "Must `brew install markdown`!"; }; ex
 mdo () { md "$1" && open "$1".html; }; export -f mdo 1> /dev/null
 
 ### git commands
-# show
+# global settings
+# ssh-add ~/.ssh/id_rsa
+git config --global credential.helper cache  # https://stackoverflow.com/questions/5343068/is-there-a-way-to-skip-password-typing-when-using-https-on-github
 git config --global core.pager 'less -S'  # truncate lines that go too long
-alias gitb='git branch --list'
+
+# show
+alias gitb='git branch --list'  # git branch(es)
 alias gitbl='git blame'
 alias gitd='git diff'
 alias gitds='git diff --staged'
-alias gitdl='git diff HEAD^1'
+alias gitdl='git diff HEAD~1'  # git diff last
 alias gits='git status'
-alias gitt='git tag --list'
+alias gitt='git tag --list'  # git tag(s)
 alias gitw='git whatchanged'
 # alias git_current_branch='git rev-parse --abbrev-ref HEAD'
 
-# special git logs
+########################################
+#           special git logs           #
+########################################
+#            log = default log, full commit messages
+#         pretty = one line, all metadata (helper function)
+#           flat = no branches
+#           here = only branches leading to here
+#            all = everything - every branch/stash/dead-end/etc
+#
+#      yesterday = flat, since yesterday
+#      last week = flat, since last week
+#     last month = flat, since last month
+#
+#  all yesterday = everything, since yesterday
+#  all last week = everything, since last week
+# all last month = everything, since last month
+#
+#            +me = only by me
+########################################
 alias gitlg='git log'  # log
 alias gitlp='git log --date=short --pretty=format:"%C(yellow)%h %Cred%ad %Cblue%an %C(auto)%d %Creset%s"'  # pretty
 alias gitlf='gitlp'  # flat
 alias gitlh='gitlp --graph'  # here
 alias gitla='gitlp --graph --all'  # all
-alias gitlme='gitla --author="$(git config user.name)"'  # me
-alias gitly="gitlf --since=1.day.ago"  # yesterday
-alias gitl="gitla"  # <-- personal favorite
+
+alias gitly='gitlf --since=1.day.ago'  # yesterday
+alias gitllw='gitlf --since=last.week'  # last week
+alias gitllm='gitlf --since=last.month'  # last month
+alias gitlay='gitla --since=1.day.ago'  # all, yesterday
+alias gitlalw='gitla --since=last.week'  # all, last week
+alias gitlalm='gitla --since=last.month'  # all, last month
+
+# "me" filtered
+alias gitlgme='gitlg --author="$(git config user.name)"'
+alias gitlpme='gitlp --author="$(git config user.name)"'
+alias gitlfme='gitlf --author="$(git config user.name)"'
+alias gitlhme='gitlh --author="$(git config user.name)"'
+alias gitlame='gitla --author="$(git config user.name)"'
+
+alias gitlyme='gitly --author="$(git config user.name)"'
+alias gitllwme='gitllw --author="$(git config user.name)"'
+alias gitllmme='gitllm --author="$(git config user.name)"'
+alias gitlayme='gitlay --author="$(git config user.name)"'
+alias gitlalwme='gitlalw --author="$(git config user.name)"'
+alias gitlalmme='gitlalm --author="$(git config user.name)"'
+
+alias gitl="gitlh"  # <-- personal favorite
+alias gitlme='gitlhme'  # <-- personal favorite
 
 gitaheadbehind () {
     [ -z $1 ] && remote="master" || remote=$1
@@ -125,29 +169,36 @@ gitaheadbehind () {
 }; export -f gitaheadbehind 1> /dev/null
 
 # modify
-#alias gitau='git add -u'
+alias gitaa='git add .'
+alias gitau='git add -u'
 alias gitbr='git branch'
 alias gitcom='git commit'
 alias gitcoma='git commit --amend'
 alias gitch='git checkout'
 alias gitcherry='git cherry-pick -x'
 alias gitfe='git fetch'
+alias gitfea='git fetch --all'
 alias gitig='nano .gitignore'
 alias gitmer='git merge --no-ff'
+alias gitmersq='git merge --squash'
 alias gitmerno='git merge --no-ff --no-commit'
 alias gitmerff='git merge --ff'
 alias gitrbi='git rebase --interactive'
 alias gitstash='git stash save'
 alias gitta='git tag -a'
 #alias gituntrack='git update-index --assume-unchanged'
-alias gpcb='git pull'
+alias gitpcb='git pull'
 # alias gpcb='git pull origin "$(git_current_branch)"'
-alias gpoh='git push origin head'
-alias gpoht='gpoh --tags'
-alias gpohi='git push -u origin head'
-alias gsuir="git submodule update --init --recursive"
+alias gitpoh='git push origin head'
+alias gitpoht='git push origin head --tags'
+alias gitpohi='git push -u origin head'
+alias gitsuir="git submodule update --init --recursive"
 alias ithinkibrokesomething='git reset --soft HEAD~1'
 alias ijustbrokeeverything='git reset --hard origin/master && git pull origin master'
+
+alias gpcb='gitpcb'  # <-- frequent usage
+alias gpoh='gitpoh'  # <-- frequent usage
+alias gpoht='gitpoht'  # <-- frequent usage
 
 # repos
 gitclone () { git clone git@github.com:"$1"/"$2".git; }; export -f gitclone 1> /dev/null
