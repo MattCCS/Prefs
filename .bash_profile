@@ -116,45 +116,29 @@ alias gitw='git whatchanged'
 #           here = only branches leading to here
 #            all = everything - every branch/stash/dead-end/etc
 #
+########################################
+#               modifiers              #
+########################################
 #      yesterday = flat, since yesterday
 #      last week = flat, since last week
 #     last month = flat, since last month
 #
-#  all yesterday = everything, since yesterday
-#  all last week = everything, since last week
-# all last month = everything, since last month
-#
 #            +me = only by me
 ########################################
-alias gitlg='git log'  # log
-alias gitlp='git log --date=short --pretty=format:"%C(yellow)%h %Cred%ad %Cblue%an %C(auto)%d %Creset%s"'  # pretty
-alias gitlf='gitlp'  # flat
-alias gitlh='gitlp --graph'  # here
-alias gitla='gitlp --graph --all'  # all
 
-alias gitly='gitlf --since=1.day.ago'  # yesterday
-alias gitllw='gitlf --since=last.week'  # last week
-alias gitllm='gitlf --since=last.month'  # last month
-alias gitlay='gitla --since=1.day.ago'  # all, yesterday
-alias gitlalw='gitla --since=last.week'  # all, last week
-alias gitlalm='gitla --since=last.month'  # all, last month
+alias gitlg='git log '  # log
+alias gitlp='git log --date=short --pretty=format:"%C(yellow)%h %Cred%ad %Cblue%an %C(auto)%d %Creset%s" '  # pretty
+alias gitlf='gitlp '  # flat
+alias gitlh='gitlp --graph '  # here
+alias gitla='gitlp --graph --all '  # all
 
-# "me" filtered
-alias gitlgme='gitlg --author="$(git config user.name)"'
-alias gitlpme='gitlp --author="$(git config user.name)"'
-alias gitlfme='gitlf --author="$(git config user.name)"'
-alias gitlhme='gitlh --author="$(git config user.name)"'
-alias gitlame='gitla --author="$(git config user.name)"'
+alias y='--since=1.day.ago '
+alias lw='--since=last.week '
+alias lm='--since=last.month '
 
-alias gitlyme='gitly --author="$(git config user.name)"'
-alias gitllwme='gitllw --author="$(git config user.name)"'
-alias gitllmme='gitllm --author="$(git config user.name)"'
-alias gitlayme='gitlay --author="$(git config user.name)"'
-alias gitlalwme='gitlalw --author="$(git config user.name)"'
-alias gitlalmme='gitlalm --author="$(git config user.name)"'
+alias me='--author="$(git config user.name)" '
 
-alias gitl="gitlh"  # <-- personal favorite
-alias gitlme='gitlhme'  # <-- personal favorite
+alias gitl='gitlh '  # <-- personal favorite
 
 gitaheadbehind () {
     [ -z $1 ] && remote="master" || remote=$1
@@ -238,8 +222,37 @@ source ~/.bash_profile_racap 2> /dev/null && echo "[+] ~/.bash_profile_racap"
 
 # t () { eval $@; }
 
-_gitkey () { local key="$1"; shift; eval 'GIT_SSH_COMMAND="ssh -i ~/.ssh/$key"' $@; }; export -f _gitkey 1> /dev/null
-alias gitkey1='_gitkey id_rsa'
-alias gitkey2='_gitkey id2_rsa'
+_gitkey () {
+    local key="$1"
+    shift 2  # remove the "git" from the now-expanded passed command
+    git -c core.sshCommand="ssh -i ~/.ssh/$key" $@
+}; export -f _gitkey 1> /dev/null
+
+_gitkeyexperiment () {
+    local key="$1"
+    local name="$2"
+    local email="$3"
+    shift 4  # remove the "git" from the now-expanded passed command
+    git -c core.sshCommand="ssh -i ~/.ssh/$key" -c user.name="$name" -c user.email="$email" $@
+}; export -f _gitkeyexperiment 1> /dev/null
+
+alias gitkey1='_gitkey id_rsa '
+alias gitkey2='_gitkey id2_rsa '
 
 [[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm" # Load RVM into a shell session *as a function*
+
+# EXPANSION EXPERIMENTS:
+alias test_echo='echo 1'
+alias test_noexp='test_echo'
+alias test_yesexp='test_echo '
+# Tests:
+#   No expansion:
+#       test_noexp test_echo -> "1 test_echo"
+#       test_noexp test_noexp -> "1 test_noexp"
+#       test_noexp test_yesexp -> "1 test_yesexp"
+#
+#   Yes expansion:
+#       test_yesexp test_echo -> "1 echo 1"  (1st-level)
+#       test_yesexp test_noexp -> "1 echo 1"  (2nd-level)
+#       test_yesexp test_yesexp -> "1 echo 1"  (2nd-level)
+#       test_yesexp test_yesexp test_yesexp -> "1 echo 1 echo 1"  (3rd-level)
