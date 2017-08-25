@@ -40,17 +40,20 @@ export WWW_HOME
 
 ### python
 alias p='python3'
-alias pipi='pip install'
+# (pip2 provided by brew-python2)
+# (pip3 provided by brew-python3)
+alias pipi2='pip2 install'
 alias pipi3='pip3 install'
-#alias pipil='pip install --user'
-#alias pipil3='pip3 install --user'
-alias pipf='pip freeze'
+alias pipf2='pip2 freeze'
 alias pipf3='pip3 freeze'
+alias pip='pip3' # <-- personal favorite
+alias pipi='pipi3' # <-- personal favorite
+alias pipf='pipf3' # <-- personal favorite
+
 alias unit='python -m unittest'
 alias unitd='python -m unittest discover'
 alias rmpyc='find . -name \*.pyc -delete'
 alias json='python -m json.tool'
-#alias pip3=/usr/local/Cellar/python3/3.5.2_1/bin/pip3
 alias pysh=/Users/mcotton/Code/pysh/bin/pysh
 
 ### virtualenv
@@ -58,6 +61,7 @@ alias a='. bin/activate'
 alias d='deactivate'
 alias virtualenv2='virtualenv -p python2'
 alias virtualenv3='virtualenv -p python3'
+alias virtualenv='virtualenv3' # <-- personal favorite
 
 ### mac/darwin
 alias shhh='pmset sleepnow'
@@ -68,7 +72,15 @@ alias beep="echo -e '\a'"
 alias k='kill %-'
 alias o='open .'
 alias subl='open -a "Sublime Text"'
-alias refreshanaconda="kill $(ps ax | grep anaconda | grep jsonserver | awk '{print $1}')"
+
+refreshanaconda () {
+    ps ax | grep anaconda | grep jsonserver | awk '{print $1}' | \
+    while read pid; do
+        echo "Killing anaconda jsonserver: $pid"
+        kill $pid
+    done
+}; export -f refreshanaconda 1> /dev/null
+
 alias iwillfindyou='find / -name'
 cdd () { cd `dirname "$1"`; }; export -f cdd 1> /dev/null
 alias wgeta='wget --header="Accept: text/html" --user-agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10.8; rv:21.0) Gecko/20100101 Firefox/21.0"'
@@ -80,7 +92,7 @@ mdo () { md "$1" && open "$1".html; }; export -f mdo 1> /dev/null
 
 ### git commands
 # global settings
-# ssh-add ~/.ssh/id_rsa
+# ssh-add ~/.ssh/id_rsa  # <--- WARNING:  INCOMPATIBLE WITH _gitkey COMMAND!  (unless you add both)
 git config --global credential.helper cache  # https://stackoverflow.com/questions/5343068/is-there-a-way-to-skip-password-typing-when-using-https-on-github
 git config --global core.pager 'less -S'  # truncate lines that go too long
 
