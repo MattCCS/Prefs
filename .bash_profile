@@ -127,10 +127,10 @@ alias gitw='git whatchanged'
 ########################################
 
 alias gitlg='git log '  # log
-alias gitlp='git log --date=short --pretty=format:"%C(yellow)%h %Cred%ad %Cblue%an %C(auto)%d %Creset%s" '  # pretty
-alias gitlf='gitlp '  # flat
-alias gitlh='gitlp --graph '  # here
-alias gitla='gitlp --graph --all '  # all
+alias _gitlp='git log --date=short --pretty=format:"%C(yellow)%h %Cred%ad %Cblue%an %C(auto)%d %Creset%s" '  # pretty
+alias gitlf='_gitlp '  # flat
+alias gitlh='_gitlp --graph '  # here
+alias gitla='_gitlp --graph --all '  # all
 
 alias y='--since=1.day.ago '
 alias lw='--since=last.week '
@@ -179,6 +179,7 @@ alias gitmer='git merge --no-ff'
 alias gitmersq='git merge --squash'
 alias gitmerno='git merge --no-ff --no-commit'
 alias gitmerff='git merge --ff'
+alias gitrb='git rebase'
 alias gitrbi='git rebase --interactive'
 alias gitstash='git stash save'
 alias gitta='git tag -a'
@@ -245,6 +246,7 @@ alias gitkey2='_gitkey id2_rsa '
 alias test_echo='echo 1'
 alias test_noexp='test_echo'
 alias test_yesexp='test_echo '
+alias test_yesexp_chained='test_yesexp test_yesexp'
 # Tests:
 #   No expansion:
 #       test_noexp test_echo -> "1 test_echo"
@@ -256,3 +258,4 @@ alias test_yesexp='test_echo '
 #       test_yesexp test_noexp -> "1 echo 1"  (2nd-level)
 #       test_yesexp test_yesexp -> "1 echo 1"  (2nd-level)
 #       test_yesexp test_yesexp test_yesexp -> "1 echo 1 echo 1"  (3rd-level)
+#       test_yesexp_chained test_yesexp_chained -> "1 echo 1 echo 1 echo 1"  (4th-level)
