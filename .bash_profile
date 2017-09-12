@@ -1,8 +1,7 @@
 PATH=/usr/local/bin:$PATH
 export PYTHONSTARTUP="$HOME/Prefs/pythonstartup.py"
 
-alias hex='hexdump -C'
-alias encoding='file -I'
+noerr='2>/dev/null '
 
 # mysql
 PATH=$PATH:/usr/local/mysql/bin
@@ -17,7 +16,7 @@ alias my='register'
 alias unreg='unregister'
 
 ### meta commands
-alias reload='echo "[+] ~/.bash_profile"; source ~/.bash_profile'
+alias reload='echo "[+] ~/.bash_profile"; source ~/.bash_profile'  # WARNING - KILLS CURRENT VIRTUALENV!
 alias nbp='nano ~/.bash_profile'
 alias vbp='vi ~/.bash_profile'
 alias sbp='subl ~/.bash_profile'
@@ -44,34 +43,55 @@ alias p='python3'
 # (pip3 provided by brew-python3)
 alias pipi2='pip2 install'
 alias pipi3='pip3 install'
+alias pipir2='pip2 install -r requirements.txt'
+alias pipir3='pip3 install -r requirements.txt'
 alias pipf2='pip2 freeze'
 alias pipf3='pip3 freeze'
-alias pip='pip3' # <-- personal favorite
-alias pipi='pipi3' # <-- personal favorite
-alias pipf='pipf3' # <-- personal favorite
+alias pipfr2='pip2 freeze > requirements.txt'
+alias pipfr3='pip3 freeze > requirements.txt'
+
+alias pip='pip3'  # <-- personal favorite
+alias pipi='pipi3'  # <-- personal favorite
+alias pipir='pipir3'  # <-- personal favorite
+alias pipf='pipf3'  # <-- personal favorite
+alias pipfr='pipfr3'  # <-- personal favorite
 
 alias unit='python -m unittest'
 alias unitd='python -m unittest discover'
-alias rmpyc='find . -name \*.pyc -delete'
-alias json='python -m json.tool'
 alias pysh=/Users/mcotton/Code/pysh/bin/pysh
+
+_pslice () { python -c "import sys;a,b,c=[int(i) or None for i in sys.argv[1:]];print(sys.stdin.read().rstrip('\n')[slice(a,b,c)])" "$1" "$2" "$3"; }; export -f _pslice 1> /dev/null
+pslice () { _pslice "${1:-0}" "${2:-0}" "${3:-0}"; }; export -f pslice 1> /dev/null
+
+_psplit () { python -c "import sys;a,b=sys.argv[1:];a=a or None;b=int(b) or -1;print(' '.join(sys.stdin.read().rstrip('\n').split(a,b)))" "$1" "$2"; }; export -f _psplit 1> /dev/null
+psplit () { _psplit "${1:-}" "${2:-0}"; }; export -f psplit 1> /dev/null
+
+_preplace () { python -c "import sys;a,b,c=sys.argv[1:];c=int(c) or -1;print(sys.stdin.read().rstrip('\n').replace(a,b,c))" "$1" "$2" "$3"; }; export -f _preplace 1> /dev/null
+preplace () { _preplace "${1:-}" "${2:-}" "${3:-0}"; }; export -f preplace 1> /dev/null
+
+# protip:  chain these ^ with "while read _ _ _"
 
 ### virtualenv
 alias a='. bin/activate'
 alias d='deactivate'
 alias virtualenv2='virtualenv -p python2'
 alias virtualenv3='virtualenv -p python3'
-alias virtualenv='virtualenv3' # <-- personal favorite
+alias venv='virtualenv3' # <-- personal favorite
 
 ### mac/darwin
 alias shhh='pmset sleepnow'
 
 ### shortcuts
 alias l='ls -al'
-alias beep="echo -e '\a'"
 alias k='kill %-'
 alias o='open .'
 alias subl='open -a "Sublime Text"'
+alias hex='hexdump -C'
+alias hexf='open -a "Hex Fiend"'
+alias json='python -m json.tool'
+alias rmpyc='find . -name \*.pyc -delete'
+alias encoding='file -I'
+alias beep="echo -e '\a'"
 
 refreshanaconda () {
     ps ax | grep anaconda | grep jsonserver | awk '{print $1}' | \
@@ -89,6 +109,9 @@ alias curlj='curl -H "Content-Type: application/json"'
 ### markdown
 md () { markdown "$1" > "$1".html || echo "Must `brew install markdown`!"; }; export -f md 1> /dev/null
 mdo () { md "$1" && open "$1".html; }; export -f mdo 1> /dev/null
+
+### ssh stuff
+addpub () { cat ~/.ssh/id_rsa.pub | ssh "$1@$2" "mkdir -p ~/.ssh.authorized_keys && cat >> ~/.ssh/authorized_keys"; }; export -f addpub 1> /dev/null
 
 ### git commands
 # global settings
@@ -135,6 +158,7 @@ alias gitla='_gitlp --graph --all '  # all
 alias y='--since=1.day.ago '
 alias lw='--since=last.week '
 alias lm='--since=last.month '
+alias fp='--first-parent '
 
 alias me='--author="$(git config user.name)" '
 
