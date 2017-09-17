@@ -1,0 +1,18 @@
+{
+    "pep8_ignore": ["E501"],
+    // "pep8_ignore": ["E501", "E302"]
+    "python_interpreter": "/usr/local/bin/python3",
+    "anaconda_linting": true,
+    "anaconda_linting_behaviour": "load-save",
+    "anaconda_linter_delay": 0.5,
+    "anaconda_linter_persistent": false,
+    "anaconda_gutter_marks": true,
+    "anaconda_gutter_theme": "hard",
+    "anaconda_linter_mark_style": "outline",
+    "anaconda_linter_underlines": true,
+    "anaconda_linter_phantoms": true,
+
+    "use_pylint": false,
+
+    "pep8": true,
+}
