@@ -111,7 +111,7 @@ md () { markdown "$1" > "$1".html || echo "Must `brew install markdown`!"; }; ex
 mdo () { md "$1" && open "$1".html; }; export -f mdo 1> /dev/null
 
 ### ssh stuff
-addpub () { cat ~/.ssh/id_rsa.pub | ssh "$1@$2" "mkdir -p ~/.ssh.authorized_keys && cat >> ~/.ssh/authorized_keys"; }; export -f addpub 1> /dev/null
+addpub () { cat ~/.ssh/id_rsa.pub | ssh "$1@$2" "mkdir -p ~/.ssh && cat >> ~/.ssh/authorized_keys"; }; export -f addpub 1> /dev/null
 
 ### git commands
 # global settings
