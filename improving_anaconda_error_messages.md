@@ -46,7 +46,7 @@ Note:  all files are in the Sublime packages directory here:
     6. Line 66 change: `return (False, [PyFlakesError(filename, FakeLoc(), 'E', error.args[0]), []])`
     7. Line 71 change: `return (False, w.messages)`
 2. In `./Anaconda/anaconda_server/commands/pyflakes.py`:
-    1. Line 20 insert: `self.syntax_error = False`
+    1. Line 21 insert: `self.syntax_error = False`
     2. Line 29 insert: `(self.syntax_error, errors) = self.linter().lint(self.settings, self.code, self.filename)`
     3. Line 32 change: `'errors': errors,`
 1. In `./Anaconda/anaconda_server/handlers/python_lint_handler.py`:
