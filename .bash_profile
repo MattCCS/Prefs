@@ -72,7 +72,8 @@ preplace () { _preplace "${1:-}" "${2:-}" "${3:-0}"; }; export -f preplace 1> /d
 # protip:  chain these ^ with "while read _ _ _"
 
 ### virtualenv
-alias a='. bin/activate'
+a () { source ./"$1"/bin/activate }; export -f a 2>/dev/null
+# alias a='. bin/activate'
 alias d='deactivate'
 alias virtualenv2='virtualenv -p python2'
 alias virtualenv3='virtualenv -p python3'
@@ -118,6 +119,10 @@ addpub () { cat ~/.ssh/id_rsa.pub | ssh "$1@$2" "mkdir -p ~/.ssh && cat >> ~/.ss
 # ssh-add ~/.ssh/id_rsa  # <--- WARNING:  INCOMPATIBLE WITH _gitkey COMMAND!  (unless you add both)
 git config --global credential.helper cache  # https://stackoverflow.com/questions/5343068/is-there-a-way-to-skip-password-typing-when-using-https-on-github
 git config --global core.pager 'less -S'  # truncate lines that go too long
+
+# info
+alias gitpath='git rev-parse --show-toplevel'
+alias gitname='basename `git rev-parse --show-toplevel`'
 
 # show
 alias gitb='git branch --list'  # git branch(es)
