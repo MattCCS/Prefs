@@ -9,14 +9,13 @@ PATH=$PATH:/usr/local/mysql/bin
 # twist
 alias thost='twist web --path'
 
-# register/my
+# register
 PATH=$PATH:/usr/local/bin/registered
 alias reg='register'
-alias my='register'
 alias unreg='unregister'
 
 ### meta commands
-alias reload='echo "[+] ~/.bash_profile"; source ~/.bash_profile'  # WARNING - KILLS CURRENT VIRTUALENV!
+alias reload='source ~/.bash_profile && echo "[+] ~/.bash_profile"'  # WARNING - KILLS CURRENT VIRTUALENV!
 alias nbp='nano ~/.bash_profile'
 alias vbp='vi ~/.bash_profile'
 alias sbp='subl ~/.bash_profile'
@@ -38,7 +37,10 @@ WWW_HOME='http://www.google.com/'
 export WWW_HOME
 
 ### python
-alias p='python3'
+alias p='python3 '
+alias v='--version'
+alias pver='python --version'
+alias pdoc='pydoc -w ./'
 # (pip2 provided by brew-python2)
 # (pip3 provided by brew-python3)
 alias pipi2='pip2 install'
@@ -47,14 +49,17 @@ alias pipir2='pip2 install -r requirements.txt'
 alias pipir3='pip3 install -r requirements.txt'
 alias pipf2='pip2 freeze'
 alias pipf3='pip3 freeze'
-alias pipfr2='pip2 freeze > requirements.txt'
-alias pipfr3='pip3 freeze > requirements.txt'
+alias pipfr2='pip2 freeze >> requirements.txt'
+alias pipfr3='pip3 freeze >> requirements.txt'
+pipit2 () { PYTHONUSERBASE="$2" pip2 install "$1"; }; export -f pipit2 1> /dev/null  # "pipit = PIP Install Target"
+pipit3 () { PYTHONUSERBASE="$2" pip3 install "$1"; }; export -f pipit3 1> /dev/null
 
 alias pip='pip3'  # <-- personal favorite
 alias pipi='pipi3'  # <-- personal favorite
 alias pipir='pipir3'  # <-- personal favorite
 alias pipf='pipf3'  # <-- personal favorite
 alias pipfr='pipfr3'  # <-- personal favorite
+alias pipit='pipit3'  # <-- personal favorite
 
 alias unit='python -m unittest'
 alias unitd='python -m unittest discover'
@@ -71,27 +76,38 @@ preplace () { _preplace "${1:-}" "${2:-}" "${3:-0}"; }; export -f preplace 1> /d
 
 # protip:  chain these ^ with "while read _ _ _"
 
+alias pfirst="head -n "
+alias plast="tail -n "
+pbetween () { pfirst "$2" | plast $(($2 - $1)); }; export -f pbetween 1> /dev/null
+
 ### virtualenv
-alias a='. bin/activate'
+# alias a='. bin/activate'
+a () { source "${1:-.}/bin/activate" }; export -f a 1>/dev/null
 alias d='deactivate'
 alias virtualenv2='virtualenv -p python2'
 alias virtualenv3='virtualenv -p python3'
 alias venv='virtualenv3' # <-- personal favorite
 
 ### mac/darwin
-alias shhh='pmset sleepnow'
+alias shhh='pmset displaysleepnow'
+alias deepsleep='pmset sleepnow'
 
 ### shortcuts
 alias l='ls -al'
 alias k='kill %-'
 alias o='open .'
 alias subl='open -a "Sublime Text"'
+alias osaj='osascript -l JavaScript '
+alias bin='xxd -b'
 alias hex='hexdump -C'
 alias hexf='open -a "Hex Fiend"'
 alias json='python -m json.tool'
 alias rmpyc='find . -name \*.pyc -delete'
 alias encoding='file -I'
 alias beep="echo -e '\a'"
+
+### youtube
+alias yt='youtube-dl -f "bestvideo[ext=mp4]+bestaudio[ext=m4a]" '
 
 refreshanaconda () {
     ps ax | grep anaconda | grep jsonserver | awk '{print $1}' | \
@@ -102,7 +118,7 @@ refreshanaconda () {
 }; export -f refreshanaconda 1> /dev/null
 
 alias iwillfindyou='find / -name'
-cdd () { cd `dirname "$1"`; }; export -f cdd 1> /dev/null
+cdd () { cd "`dirname "$1"`"; }; export -f cdd 1> /dev/null
 alias wgeta='wget --header="Accept: text/html" --user-agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10.8; rv:21.0) Gecko/20100101 Firefox/21.0"'
 alias curlj='curl -H "Content-Type: application/json"'
 
@@ -111,9 +127,16 @@ md () { markdown "$1" > "$1".html || echo "Must `brew install markdown`!"; }; ex
 mdo () { md "$1" && open "$1".html; }; export -f mdo 1> /dev/null
 
 ### ssh stuff
-addpub () { cat ~/.ssh/id_rsa.pub | ssh "$1@$2" "mkdir -p ~/.ssh && cat >> ~/.ssh/authorized_keys"; }; export -f addpub 1> /dev/null
+alias sshno="ssh -i ~/.ssh/id_rsa_nopass "
+addpub () { cat ~/.ssh/"$1.pub" | ssh "$2" "mkdir -p ~/.ssh && chmod 700 ~/.ssh && cat >> ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys"; }; export -f addpub 1> /dev/null
 
-### git commands
+deploy () { scp -r $1 $2 }; export -f deploy 1> /dev/null
+
+
+########################################
+#             git commands             #
+########################################
+
 # global settings
 # ssh-add ~/.ssh/id_rsa  # <--- WARNING:  INCOMPATIBLE WITH _gitkey COMMAND!  (unless you add both)
 git config --global credential.helper cache  # https://stackoverflow.com/questions/5343068/is-there-a-way-to-skip-password-typing-when-using-https-on-github
@@ -126,9 +149,10 @@ alias gitd='git diff'
 alias gitds='git diff --staged'
 alias gitdl='git diff HEAD~1'  # git diff last
 alias gits='git status'
+alias gitsh='git show '
 alias gitt='git tag --list'  # git tag(s)
 alias gitw='git whatchanged'
-# alias git_current_branch='git rev-parse --abbrev-ref HEAD'
+alias git_current_branch='git rev-parse --abbrev-ref HEAD'
 
 ########################################
 #           special git logs           #
@@ -195,9 +219,11 @@ alias gitbr='git branch'
 alias gitcom='git commit'
 alias gitcoma='git commit --amend'
 alias gitch='git checkout'
+gitchi () { git checkout -b "$1" "origin/$1"; }; export -f gitchi 1> /dev/null
 alias gitcherry='git cherry-pick -x'
 alias gitfe='git fetch'
 alias gitfea='git fetch --all'
+alias gitfeap='git fetch --all --prune'
 alias gitig='nano .gitignore'
 alias gitmer='git merge --no-ff'
 alias gitmersq='git merge --squash'
@@ -208,12 +234,15 @@ alias gitrbi='git rebase --interactive'
 alias gitstash='git stash save'
 alias gitta='git tag -a'
 #alias gituntrack='git update-index --assume-unchanged'
-alias gitpcb='git pull'
-# alias gpcb='git pull origin "$(git_current_branch)"'
+alias gitp='git pull'
+alias gitpcb='git pull origin "$(git_current_branch)"'
 alias gitpoh='git push origin head'
 alias gitpoht='git push origin head --tags'
-alias gitpohi='git push -u origin head'
+alias gitpohi='git push -u origin head'  # "initial"
 alias gitsuir="git submodule update --init --recursive"
+# alias gitrmbranchlocal="git branch -D "
+# alias gitrmbranchremote="git push origin --delete "
+gitsuto () { git branch --set-upstream-to="origin/$1" "$2"; }; export -f gitsuto 1> /dev/null
 alias ithinkibrokesomething='git reset --soft HEAD~1'
 alias ijustbrokeeverything='git reset --hard origin/master && git pull origin master'
 
@@ -241,9 +270,11 @@ alias nbpp='nano ~/.bash_profile_private'
 alias sbpp='subl ~/.bash_profile_private'
 alias nbpr='nano ~/.bash_profile_racap'
 alias sbpr='subl ~/.bash_profile_racap'
-source ~/.bash_profile_private 2> /dev/null && echo "[+] ~/.bash_profile_private"
-source ~/.bash_profile_hubspot 2> /dev/null && echo "[+] ~/.bash_profile_hubspot"
-source ~/.bash_profile_racap 2> /dev/null && echo "[+] ~/.bash_profile_racap"
+alias nbprp='nano ~/.bash_profile_racap_personal'
+alias sbprp='subl ~/.bash_profile_racap_personal'
+FILE=~/.bash_profile_private && test -f $FILE && source $FILE && echo "[+] ~/.bash_profile_private"
+FILE=~/.bash_profile_hubspot && test -f $FILE && source $FILE && echo "[+] ~/.bash_profile_hubspot"
+FILE=~/.bash_profile_racap && test -f $FILE && source $FILE && echo "[+] ~/.bash_profile_racap"
 
 # t () { eval $@; }
 
@@ -262,7 +293,7 @@ _gitkeyexperiment () {
 }; export -f _gitkeyexperiment 1> /dev/null
 
 alias gitkey1='_gitkey id_rsa '
-alias gitkey2='_gitkey id2_rsa '
+alias gitkey2='_gitkey id_rsa_github_mattccs '
 
 [[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm" # Load RVM into a shell session *as a function*
 
