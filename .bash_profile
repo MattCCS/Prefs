@@ -81,8 +81,8 @@ alias plast="tail -n "
 pbetween () { pfirst "$2" | plast $(($2 - $1)); }; export -f pbetween 1> /dev/null
 
 ### virtualenv
-# alias a='. bin/activate'
-a () { source "${1:-.}/bin/activate" }; export -f a 1>/dev/null
+a () { source ./"$1"/bin/activate }; export -f a 1>/dev/null
+# a () { source "${1:-.}/bin/activate" }; export -f a 1>/dev/null
 alias d='deactivate'
 alias virtualenv2='virtualenv -p python2'
 alias virtualenv3='virtualenv -p python3'
@@ -141,6 +141,10 @@ deploy () { scp -r $1 $2 }; export -f deploy 1> /dev/null
 # ssh-add ~/.ssh/id_rsa  # <--- WARNING:  INCOMPATIBLE WITH _gitkey COMMAND!  (unless you add both)
 git config --global credential.helper cache  # https://stackoverflow.com/questions/5343068/is-there-a-way-to-skip-password-typing-when-using-https-on-github
 git config --global core.pager 'less -S'  # truncate lines that go too long
+
+# info
+alias gitpath='git rev-parse --show-toplevel'
+alias gitname='basename `git rev-parse --show-toplevel`'
 
 # show
 alias gitb='git branch --list'  # git branch(es)
