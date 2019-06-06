@@ -1,10 +1,14 @@
 PATH=/usr/local/bin:$PATH
-export PYTHONSTARTUP="$HOME/Prefs/pythonstartup.py"
+PATH=/usr/local/mysql/bin:$PATH
+# export PYTHONSTARTUP="$HOME/Prefs/pythonstartup.py"
 
 noerr='2>/dev/null '
 
 # mysql
 PATH=$PATH:/usr/local/mysql/bin
+ 
+# LibreSSL
+alias ossl='/usr/local/Cellar/libressl/2.9.2/bin/openssl '
 
 # twist
 alias thost='twist web --path'
@@ -108,6 +112,7 @@ alias beep="echo -e '\a'"
 
 ### youtube
 alias yt='youtube-dl -f "bestvideo[ext=mp4]+bestaudio[ext=m4a]" '
+alias yta='youtube-dl -f "bestaudio[ext=m4a]" '
 
 refreshanaconda () {
     ps ax | grep anaconda | grep jsonserver | awk '{print $1}' | \
