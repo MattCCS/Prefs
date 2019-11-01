@@ -6,9 +6,13 @@ noerr='2>/dev/null '
 
 # mysql
 PATH=$PATH:/usr/local/mysql/bin
- 
+
 # LibreSSL
 alias ossl='/usr/local/Cellar/libressl/2.9.2/bin/openssl '
+
+# (for testing)
+alias ossl1='/usr/bin/openssl '
+alias ossl2='/usr/local/Cellar/libressl/2.9.2/bin/openssl '
 
 # twist
 alias thost='twist web --path'
@@ -85,12 +89,16 @@ alias plast="tail -n "
 pbetween () { pfirst "$2" | plast $(($2 - $1)); }; export -f pbetween 1> /dev/null
 
 ### virtualenv
-a () { source ./"$1"/bin/activate }; export -f a 1>/dev/null
-# a () { source "${1:-.}/bin/activate" }; export -f a 1>/dev/null
-alias d='deactivate'
 alias virtualenv2='virtualenv -p python2'
 alias virtualenv3='virtualenv -p python3'
 alias venv='virtualenv3' # <-- personal favorite
+
+a () { source ./"$1"/bin/activate }; export -f a 1>/dev/null
+alias d='deactivate'
+
+alias vv='venv venv'
+alias av='a venv'
+alias dv='d'
 
 ### mac/darwin
 alias shhh='pmset displaysleepnow'
