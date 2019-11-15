@@ -44,6 +44,8 @@ alias lynx='lynx -accept_all_cookies -nopause'
 WWW_HOME='http://www.google.com/'
 export WWW_HOME
 
+alias df='dwarf-fortress & '  # brew cask
+
 ### python
 alias p='python3 '
 alias v='--version'
