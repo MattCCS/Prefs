@@ -1,18 +1,15 @@
 PATH=/usr/local/bin:$PATH
-PATH=/usr/local/mysql/bin:$PATH
 # export PYTHONSTARTUP="$HOME/Prefs/pythonstartup.py"
 
 noerr='2>/dev/null '
 
+# OpenSSL / LibreSSL
+alias systemssl='/usr/bin/openssl '
+alias libressl='/usr/local/Cellar/libressl/2.9.2/bin/openssl '
+alias openssl='libressl '
+
 # mysql
 PATH=$PATH:/usr/local/mysql/bin
-
-# LibreSSL
-alias ossl='/usr/local/Cellar/libressl/2.9.2/bin/openssl '
-
-# (for testing)
-alias ossl1='/usr/bin/openssl '
-alias ossl2='/usr/local/Cellar/libressl/2.9.2/bin/openssl '
 
 # twist
 alias thost='twist web --path'
@@ -21,6 +18,9 @@ alias thost='twist web --path'
 PATH=$PATH:/usr/local/bin/registered
 alias reg='register'
 alias unreg='unregister'
+
+# Dwarf Fortress
+alias dfort='dwarf-fortress & '  # brew cask
 
 ### meta commands
 alias reload='source ~/.bash_profile && echo "[+] ~/.bash_profile"'  # WARNING - KILLS CURRENT VIRTUALENV!
@@ -43,8 +43,6 @@ alias hch='hc --help'
 alias lynx='lynx -accept_all_cookies -nopause'
 WWW_HOME='http://www.google.com/'
 export WWW_HOME
-
-alias df='dwarf-fortress & '  # brew cask
 
 ### python
 alias p='python3 '
@@ -91,12 +89,12 @@ alias plast="tail -n "
 pbetween () { pfirst "$2" | plast $(($2 - $1)); }; export -f pbetween 1> /dev/null
 
 ### virtualenv
+a () { source ./"$1"/bin/activate }; export -f a 1>/dev/null
+# a () { source "${1:-.}/bin/activate" }; export -f a 1>/dev/null
+alias d='deactivate'
 alias virtualenv2='virtualenv -p python2'
 alias virtualenv3='virtualenv -p python3'
 alias venv='virtualenv3' # <-- personal favorite
-
-a () { source ./"$1"/bin/activate }; export -f a 1>/dev/null
-alias d='deactivate'
 
 alias vv='venv venv'
 alias av='a venv'
@@ -123,6 +121,9 @@ alias beep="echo -e '\a'"
 ### youtube
 alias yt='youtube-dl -f "bestvideo[ext=mp4]+bestaudio[ext=m4a]" '
 alias yta='youtube-dl -f "bestaudio[ext=m4a]" '
+
+alias ytd='yt --no-check-certificate '
+alias ytad='yta --no-check-certificate '
 
 refreshanaconda () {
     ps ax | grep anaconda | grep jsonserver | awk '{print $1}' | \
