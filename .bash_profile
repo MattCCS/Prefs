@@ -38,7 +38,7 @@ split-on-n () {
     echo "-rest: ${${1}:3}"
     echo "last: ${${1}: -3}"
     echo "-rest: ${${1}:0:-3}"
-}; export -f take-n 1> /dev/null
+}; export -f split-on-n 1> /dev/null
 
 stem () {
     filename=$(basename -- "$1")
@@ -50,7 +50,7 @@ ext () {
     filename=$(basename -- "$1")
     extension_="${filename##*.}"
     echo $extension_
-}; export -f extension 1> /dev/null
+}; export -f ext 1> /dev/null
 
 noext () {
     # FIXME: requires abs path...
@@ -105,13 +105,13 @@ crop () {
     h="$5"
     ffmpeg -i "$file" -vf "crop='$w:$h:$x:$y'" "$file-crop.mp4"
 }; export -f crop 1> /dev/null
-crop-square-left () { ffmpeg -i "$1" -vf "crop='min(iw,ih):min(iw,ih):0:0'" "`dirname $1`/left-`basename $1`" }; export -f crop-square-left 1> /dev/null
-crop-square-center () { ffmpeg -i "$1" -vf "crop='min(iw,ih):min(iw,ih):max((iw-ih)/2,0):max((ih-iw)/2,0)'" "`dirname $1`/center-`basename $1`" }; export -f crop-square-center 1> /dev/null
-crop-square-right () { ffmpeg -i "$1" -vf "crop='min(iw,ih):min(iw,ih):max(iw-ih,0):max(ih-iw,0)'" "`dirname $1`/right-`basename $1`" }; export -f crop-square-right 1> /dev/null
+crop-square-left () { ffmpeg -i "$1" -vf "crop='min(iw,ih):min(iw,ih):0:0'" "`dirname $1`/left-`basename $1`"; }; export -f crop-square-left 1> /dev/null
+crop-square-center () { ffmpeg -i "$1" -vf "crop='min(iw,ih):min(iw,ih):max((iw-ih)/2,0):max((ih-iw)/2,0)'" "`dirname $1`/center-`basename $1`"; }; export -f crop-square-center 1> /dev/null
+crop-square-right () { ffmpeg -i "$1" -vf "crop='min(iw,ih):min(iw,ih):max(iw-ih,0):max(ih-iw,0)'" "`dirname $1`/right-`basename $1`"; }; export -f crop-square-right 1> /dev/null
 
 ### screen capture
-devices () { ffmpeg -f avfoundation -list_devices true -i "" }; export -f devices 1> /dev/null
-record-air () { record-macos "30" "1440" "900" "$1" "$2" }; export -f record-air 1> /dev/null
+devices () { ffmpeg -f avfoundation -list_devices true -i ""; }; export -f devices 1> /dev/null
+record-air () { record-macos "30" "1440" "900" "$1" "$2"; }; export -f record-air 1> /dev/null
 record-macos () {
     ffmpeg -f avfoundation -r "$1" -video_size "$2x$3" -i "$4:$5" -pix_fmt yuv420p "rec.mov"
 }; export -f record-macos 1> /dev/null
@@ -122,8 +122,8 @@ vid-to-gif () {
     -filter_complex 'fps=30,scale=-1:-1:flags=lanczos,split [o1] [o2];[o1] palettegen [p]; [o2] fifo [o3];[o3] [p] paletteuse' \
     "$1.gif"
 }; export -f vid-to-gif 1> /dev/null
-vid-to-mp4 () { ffmpeg -i "$1" "$1.mp4" }; export -f vid-to-mp4 1> /dev/null
-gif-to-mp4 () { ffmpeg -i "$1" -movflags faststart -pix_fmt yuv420p -vf "scale=trunc(iw/2)*2:trunc(ih/2)*2" "$1.mp4" }; export -f gif-to-mp4 1> /dev/null
+vid-to-mp4 () { ffmpeg -i "$1" "$1.mp4"; }; export -f vid-to-mp4 1> /dev/null
+gif-to-mp4 () { ffmpeg -i "$1" -movflags faststart -pix_fmt yuv420p -vf "scale=trunc(iw/2)*2:trunc(ih/2)*2" "$1.mp4"; }; export -f gif-to-mp4 1> /dev/null
 frames-to-mp4 () {
     # ARG 1: 60
     # ARG 2: 256x256
@@ -133,7 +133,7 @@ frames-to-mp4 () {
     filenamePattern="$3"
     ffmpeg -r "$fps" -f image2 -s "$WxH" -i "$filenamePattern" -vcodec libx264 -crf 25 -pix_fmt yuv420p out.mp4
 }; export -f frames-to-mp4 1> /dev/null
-mux-video-audio () { ffmpeg -i "$1" -i "$2" -c copy -map 0:0 -map 1:1 -shortest "$1-mux.mp4" }; export -f mux-video-audio 1> /dev/null
+mux-video-audio () { ffmpeg -i "$1" -i "$2" -c copy -map 0:0 -map 1:1 -shortest "$1-mux.mp4"; }; export -f mux-video-audio 1> /dev/null
 stabilize () {
     vid="$1"
     ffmpeg -i "$vid" -vf vidstabdetect=shakiness=10:accuracy=15 -f null - \
@@ -209,8 +209,8 @@ alias pipf2='pip2 freeze'
 alias pipf3='pip3.7 freeze'
 alias pipfr2='pip2 freeze > requirements.txt'
 alias pipfr3='pip3.7 freeze > requirements.txt'
-pipit2 () { PYTHONUSERBASE="$2" pip2 install "$1"; }; export -f pipit2 1> /dev/null  # "pipit = PIP Install Target"
-pipit3 () { PYTHONUSERBASE="$2" pip3.7 install "$1"; }; export -f pipit3 1> /dev/null
+pipit2 () { PYTHONUSERBASE="$2" pip2 install "$1";; }; export -f pipit2 1> /dev/null  # "pipit = PIP Install Target"
+pipit3 () { PYTHONUSERBASE="$2" pip3.7 install "$1";; }; export -f pipit3 1> /dev/null
 
 alias pip='pip3.7'  # <-- personal favorite
 alias pipi='pipi3'  # <-- personal favorite
@@ -223,20 +223,20 @@ alias unit='python -m unittest'
 alias unitd='python -m unittest discover'
 alias pysh=/Users/mcotton/Code/pysh/bin/pysh
 
-_pslice () { python -c "import sys;a,b,c=[int(i) or None for i in sys.argv[1:]];print(sys.stdin.read().rstrip('\n')[slice(a,b,c)])" "$1" "$2" "$3"; }; export -f _pslice 1> /dev/null
-pslice () { _pslice "${1:-0}" "${2:-0}" "${3:-0}"; }; export -f pslice 1> /dev/null
+_pslice () { python -c "import sys;a,b,c=[int(i) or None for i in sys.argv[1:]];print(sys.stdin.read().rstrip('\n')[slice(a,b,c)])" "$1" "$2" "$3";; }; export -f _pslice 1> /dev/null
+pslice () { _pslice "${1:-0}" "${2:-0}" "${3:-0}";; }; export -f pslice 1> /dev/null
 
-_psplit () { python -c "import sys;a,b=sys.argv[1:];a=a or None;b=int(b) or -1;print(' '.join(sys.stdin.read().rstrip('\n').split(a,b)))" "$1" "$2"; }; export -f _psplit 1> /dev/null
-psplit () { _psplit "${1:-}" "${2:-0}"; }; export -f psplit 1> /dev/null
+_psplit () { python -c "import sys;a,b=sys.argv[1:];a=a or None;b=int(b) or -1;print(' '.join(sys.stdin.read().rstrip('\n').split(a,b)))" "$1" "$2";; }; export -f _psplit 1> /dev/null
+psplit () { _psplit "${1:-}" "${2:-0}";; }; export -f psplit 1> /dev/null
 
-_preplace () { python -c "import sys;a,b,c=sys.argv[1:];c=int(c) or -1;print(sys.stdin.read().rstrip('\n').replace(a,b,c))" "$1" "$2" "$3"; }; export -f _preplace 1> /dev/null
-preplace () { _preplace "${1:-}" "${2:-}" "${3:-0}"; }; export -f preplace 1> /dev/null
+_preplace () { python -c "import sys;a,b,c=sys.argv[1:];c=int(c) or -1;print(sys.stdin.read().rstrip('\n').replace(a,b,c))" "$1" "$2" "$3";; }; export -f _preplace 1> /dev/null
+preplace () { _preplace "${1:-}" "${2:-}" "${3:-0}";; }; export -f preplace 1> /dev/null
 
 # protip:  chain these ^ with "while read _ _ _"
 
 alias pfirst="head -n "
 alias plast="tail -n "
-pbetween () { pfirst "$2" | plast $(($2 - $1)); }; export -f pbetween 1> /dev/null
+pbetween () { pfirst "$2" | plast $(($2 - $1));; }; export -f pbetween 1> /dev/null
 
 autoclick() {
     while (true); do doubleclick; done
@@ -252,8 +252,8 @@ doubleclick() {
 
 
 ### virtualenv
-# a () { source ./"$1"/bin/activate }; export -f a 1>/dev/null
-a () { source "${1:-.}/bin/activate" }; export -f a 1>/dev/null
+# a () { source ./"$1"/bin/activate; }; export -f a 1>/dev/null
+a () { source "${1:-.}/bin/activate"; }; export -f a 1>/dev/null
 alias d='deactivate'
 alias virtualenv2='virtualenv -p python2'
 alias virtualenv3='virtualenv -p python3.7'
@@ -305,19 +305,19 @@ refreshanaconda () {
 }; export -f refreshanaconda 1> /dev/null
 
 alias iwillfindyou='find / -name'
-cdd () { cd "`dirname "$1"`"; }; export -f cdd 1> /dev/null
+cdd () { cd "`dirname "$1"`";; }; export -f cdd 1> /dev/null
 alias wgeta='wget --header="Accept: text/html" --user-agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10.8; rv:21.0) Gecko/20100101 Firefox/21.0"'
 alias curlj='curl -H "Content-Type: application/json"'
 
 ### markdown
-md () { markdown "$1" > "$1".html || echo "Must `brew install markdown`!"; }; export -f md 1> /dev/null
-mdo () { md "$1" && open "$1".html; }; export -f mdo 1> /dev/null
+md () { markdown "$1" > "$1".html || echo "Must `brew install markdown`!";; }; export -f md 1> /dev/null
+mdo () { md "$1" && open "$1".html;; }; export -f mdo 1> /dev/null
 
 ### ssh stuff
 alias sshno="ssh -i ~/.ssh/id_rsa_nopass "
-addpub () { cat ~/.ssh/"$1.pub" | ssh "$2" "mkdir -p ~/.ssh && chmod 700 ~/.ssh && cat >> ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys"; }; export -f addpub 1> /dev/null
+addpub () { cat ~/.ssh/"$1.pub" | ssh "$2" "mkdir -p ~/.ssh && chmod 700 ~/.ssh && cat >> ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys";; }; export -f addpub 1> /dev/null
 
-deploy () { scp -r $1 $2 }; export -f deploy 1> /dev/null
+deploy () { scp -r $1 $2; }; export -f deploy 1> /dev/null
 
 
 ########################################
@@ -410,7 +410,7 @@ alias gitbr='git branch'
 alias gitcom='git commit'
 alias gitcoma='git commit --amend'
 alias gitch='git checkout'
-gitchi () { git checkout -b "$1" "origin/$1"; }; export -f gitchi 1> /dev/null
+gitchi () { git checkout -b "$1" "origin/$1";; }; export -f gitchi 1> /dev/null
 alias gitcherry='git cherry-pick -x'
 alias gitfe='git fetch'
 alias gitfea='git fetch --all'
@@ -433,7 +433,7 @@ alias gitpohi='git push -u origin head'  # "initial"
 alias gitsuir="git submodule update --init --recursive"
 # alias gitrmbranchlocal="git branch -D "
 # alias gitrmbranchremote="git push origin --delete "
-gitsuto () { git branch --set-upstream-to="origin/$1" "$2"; }; export -f gitsuto 1> /dev/null
+gitsuto () { git branch --set-upstream-to="origin/$1" "$2";; }; export -f gitsuto 1> /dev/null
 alias ithinkibrokesomething='git reset --soft HEAD~1'
 alias ijustbrokeeverything='git reset --hard origin/master && git pull origin master'
 
@@ -442,14 +442,14 @@ alias gpoh='gitpoh'  # <-- frequent usage
 alias gpoht='gitpoht'  # <-- frequent usage
 
 # repos
-gitclone () { git clone git@github.com:"$1"/"$2".git; }; export -f gitclone 1> /dev/null
-gitcloneme () { gitclone "MattCCS" "$1"; }; export -f gitcloneme 1> /dev/null
+gitclone () { git clone git@github.com:"$1"/"$2".git;; }; export -f gitclone 1> /dev/null
+gitcloneme () { gitclone "MattCCS" "$1";; }; export -f gitcloneme 1> /dev/null
 
-grao () { git remote add origin git@github.com:"$1"/"$2".git; }; export -f grao 1> /dev/null
-graome () { grao "MattCCS" "$1"; }; export -f graome 1> /dev/null
+grao () { git remote add origin git@github.com:"$1"/"$2".git;; }; export -f grao 1> /dev/null
+graome () { grao "MattCCS" "$1";; }; export -f graome 1> /dev/null
 
-gsadd () { local user="$1"; local repo="$2"; shift 2; git submodule add git@github.com:"$user"/"$repo".git "$@"; }; export -f gsadd 1> /dev/null
-gsaddme () { local repo="$1"; shift; gsadd "MattCCS" "$repo" "$@"; }; export -f gsaddme 1> /dev/null
+gsadd () { local user="$1"; local repo="$2"; shift 2; git submodule add git@github.com:"$user"/"$repo".git "$@";; }; export -f gsadd 1> /dev/null
+gsaddme () { local repo="$1"; shift; gsadd "MattCCS" "$repo" "$@";; }; export -f gsaddme 1> /dev/null
 
 # autocorrect
 alias gti='echo "Did you mean *git*?"; git'
