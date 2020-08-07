@@ -1,7 +1,61 @@
-PATH=/usr/local/bin:$PATH
+PATH=$PATH:/usr/local/bin
+PATH=$PATH:/Users/matt/Library/Python/3.7/bin
+PATH=$PATH:/Users/matt/Library/Python/3.8/bin
 # export PYTHONSTARTUP="$HOME/Prefs/pythonstartup.py"
 
 noerr='2>/dev/null '
+
+########################
+# EXPORTS
+export LIBREOFFICE="$HOME/Applications/LibreOffice.app"
+
+########################
+# NORTHEASTERN
+sax () {
+    saxon_path='/Users/matt/Documents/CLASS_FOLDERS/Graduate/Year 2/Summer 2020/Database Management Systems/Homework/HW5/Java stuff/SaxonHE10-1J'
+    java -cp "$saxon_path/saxon-he-10.1.jar" net.sf.saxon.Transform \
+        -s:"$1" \
+        -xsl:"$2" \
+        -o:"$2.out.html" \
+    && open "$2.out.html"
+}; export -f sax 1> /dev/null
+saxon () {
+    saxon_path='/Users/matt/Documents/CLASS_FOLDERS/Graduate/Year 2/Summer 2020/Database Management Systems/Homework/HW5/Java stuff/SaxonHE10-1J'
+    base="$1"
+    if [[ "$1"  =~ .*\.xml$ ]] || [[ "$1" =~ .*\.xsl$ ]]; then
+        base="${${1}:0:-4}"
+    fi
+    java -cp "$saxon_path/saxon-he-10.1.jar" net.sf.saxon.Transform \
+        -s:"$base.xml" \
+        -xsl:"$base.xsl" \
+        -o:"$base.out.html" \
+    && open "$base.out.html"
+}; export -f saxon 1> /dev/null
+
+# helpers
+split-on-n () {
+    echo "first: ${${1}:0:3}"
+    echo "-rest: ${${1}:3}"
+    echo "last: ${${1}: -3}"
+    echo "-rest: ${${1}:0:-3}"
+}; export -f take-n 1> /dev/null
+
+stem () {
+    filename=$(basename -- "$1")
+    stem_="${filename%.*}"
+    echo $stem_
+}; export -f stem 1> /dev/null
+
+ext () {
+    filename=$(basename -- "$1")
+    extension_="${filename##*.}"
+    echo $extension_
+}; export -f extension 1> /dev/null
+
+noext () {
+    # FIXME: requires abs path...
+    echo "`dirname $1`/`stem $1`"
+}; export -f noext 1> /dev/null
 
 # OpenSSL / LibreSSL
 alias systemssl='/usr/bin/openssl '
@@ -29,6 +83,9 @@ alias vbp='vi ~/.bash_profile'
 alias sbp='subl ~/.bash_profile'
 alias snet='subl ~/.netrc'
 
+### network
+alias listnetworks='networksetup -listallhardwareports'
+
 ### notes
 alias notes='cd ~/Documents/Notes'
 
@@ -39,30 +96,123 @@ alias wayback='wayback_machine_downloader'
 alias hc='hashcat'
 alias hch='hc --help'
 
+### cropping
+crop () {
+    file="$1"
+    x="$2"
+    y="$3"
+    w="$4"
+    h="$5"
+    ffmpeg -i "$file" -vf "crop='$w:$h:$x:$y'" "$file-crop.mp4"
+}; export -f crop 1> /dev/null
+crop-square-left () { ffmpeg -i "$1" -vf "crop='min(iw,ih):min(iw,ih):0:0'" "`dirname $1`/left-`basename $1`" }; export -f crop-square-left 1> /dev/null
+crop-square-center () { ffmpeg -i "$1" -vf "crop='min(iw,ih):min(iw,ih):max((iw-ih)/2,0):max((ih-iw)/2,0)'" "`dirname $1`/center-`basename $1`" }; export -f crop-square-center 1> /dev/null
+crop-square-right () { ffmpeg -i "$1" -vf "crop='min(iw,ih):min(iw,ih):max(iw-ih,0):max(ih-iw,0)'" "`dirname $1`/right-`basename $1`" }; export -f crop-square-right 1> /dev/null
+
+### screen capture
+devices () { ffmpeg -f avfoundation -list_devices true -i "" }; export -f devices 1> /dev/null
+record-air () { record-macos "30" "1440" "900" "$1" "$2" }; export -f record-air 1> /dev/null
+record-macos () {
+    ffmpeg -f avfoundation -r "$1" -video_size "$2x$3" -i "$4:$5" -pix_fmt yuv420p "rec.mov"
+}; export -f record-macos 1> /dev/null
+
+## other ffmpeg
+vid-to-gif () {
+    ffmpeg -i "$1" \
+    -filter_complex 'fps=30,scale=-1:-1:flags=lanczos,split [o1] [o2];[o1] palettegen [p]; [o2] fifo [o3];[o3] [p] paletteuse' \
+    "$1.gif"
+}; export -f vid-to-gif 1> /dev/null
+vid-to-mp4 () { ffmpeg -i "$1" "$1.mp4" }; export -f vid-to-mp4 1> /dev/null
+gif-to-mp4 () { ffmpeg -i "$1" -movflags faststart -pix_fmt yuv420p -vf "scale=trunc(iw/2)*2:trunc(ih/2)*2" "$1.mp4" }; export -f gif-to-mp4 1> /dev/null
+frames-to-mp4 () {
+    # ARG 1: 60
+    # ARG 2: 256x256
+    # ARG 3: "./dir/image%05d.png"
+    fps="$1"
+    WxH="$2"
+    filenamePattern="$3"
+    ffmpeg -r "$fps" -f image2 -s "$WxH" -i "$filenamePattern" -vcodec libx264 -crf 25 -pix_fmt yuv420p out.mp4
+}; export -f frames-to-mp4 1> /dev/null
+mux-video-audio () { ffmpeg -i "$1" -i "$2" -c copy -map 0:0 -map 1:1 -shortest "$1-mux.mp4" }; export -f mux-video-audio 1> /dev/null
+stabilize () {
+    vid="$1"
+    ffmpeg -i "$vid" -vf vidstabdetect=shakiness=10:accuracy=15 -f null - \
+    && ffmpeg -i "$vid" -vf vidstabtransform=zoom=5:smoothing=30 -vcodec libx264 -preset slow -tune film -crf 20 -an "$vid-stabilized.mp4" \
+    && rm transforms.trf
+}; export -f stabilize 1> /dev/null
+stabdefault () {
+    vid="$1"
+    ffmpeg -i "$vid" -vf vidstabdetect=shakiness=5:accuracy=15:stepsize=6:mincontrast=0.3:show=2 -y dummy.mp4 \
+    && ffmpeg -i "$vid" -vf "scale=trunc((iw*1.15)/2)*2:trunc(ow/a/2)*2" -y scaled.mp4 \
+    && ffmpeg -i scaled.mp4 -vf vidstabtransform=smoothing=30:input="transforms.trf":interpol=linear:crop=black:zoom=-15:optzoom=0,unsharp=5:5:0.8:3:3:0.4 -y stabilized-output.mp4 \
+    && rm dummy.mp4 scaled.mp4 transforms.trf
+}; export -f stabdefault 1> /dev/null
+compare () {
+    ffmpeg -i "$1" -i "$2" -filter_complex hstack "`basename $1`-vs-`basename $2`.mp4"
+}; export -f compare 1> /dev/null
+compare3 () {
+    ffmpeg -i "$1" -i "$2" -i "$3" -filter_complex hstack=3 "`basename $1`-vs-`basename $2`-vs-`basename $3`.mp4"
+}; export -f compare3 1> /dev/null
+compare3v () {
+    ffmpeg -i "$1" -i "$2" -i "$3" -filter_complex vstack=3 "`basename $1`-vs-`basename $2`-vs-`basename $3`.mp4"
+}; export -f compare3v 1> /dev/null
+scale () {
+    ffmpeg -i "$1" -vf scale="$2:$3" "$1-$2x$3.mp4"
+}; export -f scale 1> /dev/null
+upscale-letterbox () {
+    w="$2"
+    h="$3"
+    ffmpeg -i "$1" \
+    -vf "scale=$w:$h:force_original_aspect_ratio=decrease,pad=$w:$h:(ow-iw)/2:(oh-ih)/2" \
+    "`noext $1`-up${w}x${h}.`ext $1`"
+}; export -f upscale-letterbox 1> /dev/null
+trim-video () {
+    file="$1"
+    start="$2"
+    duration="$3"
+    ffmpeg -ss "$start" -i "$file" -t "$duration" -c copy "$file-trim-temp.mp4" && \
+    ffmpeg -i "$file-trim-temp.mp4" -to "$duration" "$file-trim-$start-$duration.mp4" && \
+    rm "$file-trim-temp.mp4"
+}; export -f trim-video 1> /dev/null
+
+face () {
+    deactivate
+    source /Users/matt/Repos/GoodRepos/first-order-model/venv/bin/activate \
+        && python3 /Users/matt/Repos/GoodRepos/first-order-model/demo.py \
+        --cpu \
+        --config /Users/matt/Repos/GoodRepos/first-order-model/config/vox-256.yaml \
+        --source_image "$1" \
+        --driving_video "$2" \
+        --checkpoint /Users/matt/Repos/GoodRepos/first-order-model/checkpoints/vox-cpk.pth.tar \
+        --relative \
+        --adapt_scale \
+        --result_video "`basename $1`-`basename $2`"
+    deactivate
+}; export -f face 1> /dev/null
+
 ### Lynx/Lynxlet
 alias lynx='lynx -accept_all_cookies -nopause'
 WWW_HOME='http://www.google.com/'
 export WWW_HOME
 
 ### python
-alias p='python3 '
-alias v='--version'
-alias pver='python --version'
+alias p='python3.7 '
+alias pver='p --version'
 alias pdoc='pydoc -w ./'
 # (pip2 provided by brew-python2)
 # (pip3 provided by brew-python3)
 alias pipi2='pip2 install'
-alias pipi3='pip3 install'
+alias pipi3='pip3.7 install'
 alias pipir2='pip2 install -r requirements.txt'
-alias pipir3='pip3 install -r requirements.txt'
+alias pipir3='pip3.7 install -r requirements.txt'
 alias pipf2='pip2 freeze'
-alias pipf3='pip3 freeze'
-alias pipfr2='pip2 freeze >> requirements.txt'
-alias pipfr3='pip3 freeze >> requirements.txt'
+alias pipf3='pip3.7 freeze'
+alias pipfr2='pip2 freeze > requirements.txt'
+alias pipfr3='pip3.7 freeze > requirements.txt'
 pipit2 () { PYTHONUSERBASE="$2" pip2 install "$1"; }; export -f pipit2 1> /dev/null  # "pipit = PIP Install Target"
-pipit3 () { PYTHONUSERBASE="$2" pip3 install "$1"; }; export -f pipit3 1> /dev/null
+pipit3 () { PYTHONUSERBASE="$2" pip3.7 install "$1"; }; export -f pipit3 1> /dev/null
 
-alias pip='pip3'  # <-- personal favorite
+alias pip='pip3.7'  # <-- personal favorite
 alias pipi='pipi3'  # <-- personal favorite
 alias pipir='pipir3'  # <-- personal favorite
 alias pipf='pipf3'  # <-- personal favorite
@@ -88,13 +238,30 @@ alias pfirst="head -n "
 alias plast="tail -n "
 pbetween () { pfirst "$2" | plast $(($2 - $1)); }; export -f pbetween 1> /dev/null
 
+autoclick() {
+    while (true); do doubleclick; done
+}; export -f autoclick 1>/dev/null
+click() {
+    /Users/matt/AppleScripts/MouseTools -leftClick \
+    && /Users/matt/AppleScripts/MouseTools -releaseMouse
+}; export -f click 1>/dev/null
+doubleclick() {
+    /Users/matt/AppleScripts/MouseTools -doubleLeftClick \
+    && /Users/matt/AppleScripts/MouseTools -releaseMouse
+}; export -f doubleclick 1>/dev/null
+
+
 ### virtualenv
-a () { source ./"$1"/bin/activate }; export -f a 1>/dev/null
-# a () { source "${1:-.}/bin/activate" }; export -f a 1>/dev/null
+# a () { source ./"$1"/bin/activate }; export -f a 1>/dev/null
+a () { source "${1:-.}/bin/activate" }; export -f a 1>/dev/null
 alias d='deactivate'
 alias virtualenv2='virtualenv -p python2'
-alias virtualenv3='virtualenv -p python3'
-alias venv='virtualenv3' # <-- personal favorite
+alias virtualenv3='virtualenv -p python3.7'
+alias pvenv2='python2 -m venv'
+alias pvenv3.7='python3.7 -m venv'
+alias pvenv3.8='python3.8 -m venv'
+alias pvenv='p -m venv'
+alias venv='pvenv' # <-- personal favorite
 
 alias vv='venv venv'
 alias av='a venv'
@@ -119,11 +286,15 @@ alias encoding='file -I'
 alias beep="echo -e '\a'"
 
 ### youtube
-alias yt='youtube-dl -f "bestvideo[ext=mp4]+bestaudio[ext=m4a]" '
-alias yta='youtube-dl -f "bestaudio[ext=m4a]" '
-
-alias ytd='yt --no-check-certificate '
-alias ytad='yta --no-check-certificate '
+yt () {
+    youtube-dl -f "bestvideo[ext=mp4]+bestaudio[ext=m4a]" "$1" --no-check-certificate
+}; export -f yt 1> /dev/null
+yta () {
+    youtube-dl -f "bestaudio[ext=m4a]" "$1" --no-check-certificate
+}; export -f yta 1> /dev/null
+ytd () {
+    youtube-dl "$1" --no-check-certificate
+}; export -f ytd 1> /dev/null
 
 refreshanaconda () {
     ps ax | grep anaconda | grep jsonserver | awk '{print $1}' | \
