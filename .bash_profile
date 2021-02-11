@@ -1,9 +1,19 @@
 PATH=$PATH:/usr/local/bin
-PATH=$PATH:/Users/matt/Library/Python/3.7/bin
+# PATH=$PATH:/Users/matt/Library/Python/3.9/bin
 PATH=$PATH:/Users/matt/Library/Python/3.8/bin
+PATH=$PATH:/Users/matt/Library/Python/3.7/bin
+PATH="$PATH:/usr/local/opt/python@3.8/bin/python3"
+PATH="$PATH:/usr/local/opt/python@3.8/bin/pip3"
 # export PYTHONSTARTUP="$HOME/Prefs/pythonstartup.py"
+PATH="/usr/local/sbin:$PATH"
 
 noerr='2>/dev/null '
+
+# oh-my-zsh
+if [ ! -z "$ZSH_NAME" ]; then
+	unalias -m '*'
+	echo "[+] Unaliased ZSH items"
+fi
 
 ########################
 # EXPORTS
@@ -32,6 +42,17 @@ saxon () {
     && open "$base.out.html"
 }; export -f saxon 1> /dev/null
 
+# MediaMan helpers
+mmo () {
+    # "MediaMan offload"
+    service="$1"; shift;
+    for f in $@; do
+        hash="`xxh64sum $f | head -c 16`"
+        echo "mm://xxh64:$hash" > "$f.mm"
+        mm "$service" put "$f" && mv "$f" ~/.Trash
+    done
+}; export -f mmo 1> /dev/null
+
 # helpers
 split-on-n () {
     echo "first: ${${1}:0:3}"
@@ -57,9 +78,54 @@ noext () {
     echo "`dirname $1`/`stem $1`"
 }; export -f noext 1> /dev/null
 
+mvsafe () {
+    src="$1"
+    dstdir="$2"
+
+    fname="`basename $src`"
+    fstem="`stem $fname`"
+    fext="`ext $fname`"
+
+    COUNTER=1
+    dst="$dstdir/$fname"
+    while [[ -f "$dst" ]]; do
+        COUNTER=$((COUNTER + 1))
+        dst="$dstdir/$fstem $COUNTER.$fext"
+    done
+
+    mv "$src" "$dst"
+}; export -f mvsafe 1> /dev/null
+
+rextension () {
+    for f in "$@"; do
+        guess="`file -b $f`"
+        if [[ $guess == "JPEG image data"* ]]; then
+            ext="jpg"
+        elif [[ $guess == "PNG image data"* ]]; then
+            ext="png"
+        elif [[ $guess == "GIF image data"* ]]; then
+            ext="gif"
+        elif [[ $guess == "ISO Media, Apple QuickTime movie"* ]]; then
+            ext="mov"
+        elif [[ $guess == "ISO Media, Apple iTunes ALAC/AAC-LC"* ]]; then
+            ext="m4a"
+        else
+            echo "Unknown: $f (`file -b $f`)"
+            continue
+        fi
+
+        if [[ "$f" == *".$ext" ]]; then
+            continue
+        fi
+
+        mv "$f" "$f.$ext"
+    done
+}; export -f rextension 1> /dev/null
+
 # OpenSSL / LibreSSL
 alias systemssl='/usr/bin/openssl '
-alias libressl='/usr/local/Cellar/libressl/2.9.2/bin/openssl '
+alias libressl='/usr/local/Cellar/libressl/3.2.2/bin/openssl '
+# alias libressl='/usr/local/Cellar/libressl/2.9.2/bin/openssl '
 alias openssl='libressl '
 
 # mysql
@@ -115,6 +181,20 @@ record-air () { record-macos "30" "1440" "900" "$1" "$2"; }; export -f record-ai
 record-macos () {
     ffmpeg -f avfoundation -r "$1" -video_size "$2x$3" -i "$4:$5" -pix_fmt yuv420p "rec.mov"
 }; export -f record-macos 1> /dev/null
+record-mini-video () {
+    ffmpeg -nostdin -f avfoundation -r 30 -video_size "2160x1440" -i "0:none" -pix_fmt yuv420p "`date`.mov"
+}; export -f record-mini-video 1> /dev/null
+record-mini-audio () {
+    ffmpeg -f avfoundation -i "none:0" "`date`.aiff"
+}; export -f record-mini-video 1> /dev/null
+record-mini () {
+    # ffmpeg -nostdin -f avfoundation -r 10 -capture_cursor true -i "0:none" -s "720x480" -pix_fmt yuv420p "`date`.mov" 2>vid.log &
+    ffmpeg -nostdin -f avfoundation -r 30 -i "0:none" -s "720x480" -c:v libx264 "`date`.m4v" 2>vid.log &
+    ffmpeg -nostdin -f avfoundation -i "none:$1" "`date`.aiff" 2>aud.log &
+}; export -f record-mini 1> /dev/null
+stop-record-mini () {
+    killall -INT ffmpeg
+}; export -f stop-record-mini 1> /dev/null
 
 ## other ffmpeg
 vid-to-gif () {
@@ -133,13 +213,22 @@ frames-to-mp4 () {
     filenamePattern="$3"
     ffmpeg -r "$fps" -f image2 -s "$WxH" -i "$filenamePattern" -vcodec libx264 -crf 25 -pix_fmt yuv420p out.mp4
 }; export -f frames-to-mp4 1> /dev/null
-mux-video-audio () { ffmpeg -i "$1" -i "$2" -c copy -map 0:0 -map 1:1 -shortest "$1-mux.mp4"; }; export -f mux-video-audio 1> /dev/null
+mux-video-audio () {
+    ffmpeg -i "$1" -i "$2" -c:v copy -c:a aac -shortest "$1-mux.mp4"
+}; export -f mux-video-audio 1> /dev/null
+alias mux='mux-video-audio '
 stabilize () {
     vid="$1"
     ffmpeg -i "$vid" -vf vidstabdetect=shakiness=10:accuracy=15 -f null - \
     && ffmpeg -i "$vid" -vf vidstabtransform=zoom=5:smoothing=30 -vcodec libx264 -preset slow -tune film -crf 20 -an "$vid-stabilized.mp4" \
     && rm transforms.trf
 }; export -f stabilize 1> /dev/null
+stabilize-gif () {
+    gif="$1"
+    gif-to-mp4 "$gif" \
+    && stabilize "$gif.mp4" && rm "$gif.mp4" \
+    && vid-to-gif "$gif.mp4-stabilized.mp4" && rm "$gif.mp4-stabilized.mp4"
+}; export -f stabilize-gif 1> /dev/null
 stabdefault () {
     vid="$1"
     ffmpeg -i "$vid" -vf vidstabdetect=shakiness=5:accuracy=15:stepsize=6:mincontrast=0.3:show=2 -y dummy.mp4 \
@@ -196,29 +285,53 @@ WWW_HOME='http://www.google.com/'
 export WWW_HOME
 
 ### python
-alias p='python3.7 '
+alias p='python3.9 '
 alias pver='p --version'
 alias pdoc='pydoc -w ./'
 # (pip2 provided by brew-python2)
 # (pip3 provided by brew-python3)
 alias pipi2='pip2 install'
-alias pipi3='pip3.7 install'
+alias pipi3='pip3.9 install'
 alias pipir2='pip2 install -r requirements.txt'
-alias pipir3='pip3.7 install -r requirements.txt'
+alias pipir3='pip3.9 install -r requirements.txt'
 alias pipf2='pip2 freeze'
-alias pipf3='pip3.7 freeze'
+alias pipf3='pip3.9 freeze'
 alias pipfr2='pip2 freeze > requirements.txt'
-alias pipfr3='pip3.7 freeze > requirements.txt'
+alias pipfr3='pip3.9 freeze > requirements.txt'
 pipit2 () { PYTHONUSERBASE="$2" pip2 install "$1"; }; export -f pipit2 1> /dev/null  # "pipit = PIP Install Target"
-pipit3 () { PYTHONUSERBASE="$2" pip3.7 install "$1"; }; export -f pipit3 1> /dev/null
+pipit3 () { PYTHONUSERBASE="$2" pip3.9 install "$1"; }; export -f pipit3 1> /dev/null
 
-alias pip='pip3.7'  # <-- personal favorite
+alias pip='pip3.9'  # <-- personal favorite
 alias pipi='pipi3'  # <-- personal favorite
 alias pipir='pipir3'  # <-- personal favorite
 alias pipf='pipf3'  # <-- personal favorite
 alias pipfr='pipfr3'  # <-- personal favorite
 alias pipit='pipit3'  # <-- personal favorite
 
+### PyPI
+alias pypibuild='build'
+alias pypireset='rm dist/*'
+
+alias pypiuptest='twine upload --skip-existing --repository test dist/*'
+alias pypibuptest='pypibuild && pypiuptest'
+
+alias pypiuplive='twine upload --skip-existing --repository live dist/*'
+alias pypiup='pypiuplive'
+alias pypibuplive='pypibuild && pypiuplive'
+alias pypibup='pypibuild && pypiup'
+
+alias pipitest='pip install -i https://test.pypi.org/simple/ '
+
+# (legacy)
+# alias pypireg='python setup.py register -r'
+# alias pypiup='python setup.py sdist upload -r'
+# alias pypi='python setup.py register sdist upload -r'
+
+alias sbpypi='subl ~/.pypirc'
+alias sbpypirc='sbpypi'
+
+
+#
 alias unit='python -m unittest'
 alias unitd='python -m unittest discover'
 alias pysh=/Users/mcotton/Code/pysh/bin/pysh
@@ -256,10 +369,8 @@ doubleclick() {
 a () { source "${1:-.}/bin/activate"; }; export -f a 1>/dev/null
 alias d='deactivate'
 alias virtualenv2='virtualenv -p python2'
-alias virtualenv3='virtualenv -p python3.7'
+alias virtualenv3='virtualenv -p p'
 alias pvenv2='python2 -m venv'
-alias pvenv3.7='python3.7 -m venv'
-alias pvenv3.8='python3.8 -m venv'
 alias pvenv='p -m venv'
 alias venv='pvenv' # <-- personal favorite
 
@@ -274,7 +385,13 @@ alias deepsleep='pmset sleepnow'
 ### shortcuts
 alias l='ls -al'
 alias k='kill %-'
-alias o='open .'
+o () {
+    if [ "$#" -eq 0 ]; then
+        open .
+    else
+        open "$@"
+    fi
+}; export -f o 1> /dev/null
 alias subl='open -a "Sublime Text"'
 alias osaj='osascript -l JavaScript '
 alias bin='xxd -b'
@@ -292,9 +409,18 @@ yt () {
 yta () {
     youtube-dl -f "bestaudio[ext=m4a]" "$1" --no-check-certificate
 }; export -f yta 1> /dev/null
+yt1 () {
+    filename=`youtube-dl --get-filename "$1"` && \
+    youtube-dl -f "bestvideo+bestaudio" "$1" --no-check-certificate && \
+    ffmpeg -i "$filename" "$filename.mp4" && \
+    rm "$filename"
+}; export -f yt1 1> /dev/null
 ytd () {
     youtube-dl "$1" --no-check-certificate
 }; export -f ytd 1> /dev/null
+ytb () {
+    youtube-dl -f "bestvideo+bestaudio" "$1" --no-check-certificate
+}; export -f ytb 1> /dev/null
 
 refreshanaconda () {
     ps ax | grep anaconda | grep jsonserver | awk '{print $1}' | \
@@ -452,8 +578,8 @@ gsadd () { local user="$1"; local repo="$2"; shift 2; git submodule add git@gith
 gsaddme () { local repo="$1"; shift; gsadd "MattCCS" "$repo" "$@"; }; export -f gsaddme 1> /dev/null
 
 # autocorrect
-alias gti='echo "Did you mean *git*?"; git'
-alias gut='echo "Did you mean *git*?"; git'
+alias gti='echo "Did you mean *git*?"; git '
+alias gut='echo "Did you mean *git*?"; git '
 alias gtu='echo "Now this is just a disgrace."'
 
 # personal commands -- private ;)
@@ -466,8 +592,6 @@ alias sbprp='subl ~/.bash_profile_racap_personal'
 FILE=~/.bash_profile_private && test -f $FILE && source $FILE && echo "[+] ~/.bash_profile_private"
 FILE=~/.bash_profile_hubspot && test -f $FILE && source $FILE && echo "[+] ~/.bash_profile_hubspot"
 FILE=~/.bash_profile_racap && test -f $FILE && source $FILE && echo "[+] ~/.bash_profile_racap"
-
-# t () { eval $@; }
 
 _gitkey () {
     local key="$1"
