@@ -2,8 +2,9 @@ PATH=$PATH:/usr/local/bin
 # PATH=$PATH:/Users/matt/Library/Python/3.9/bin
 PATH=$PATH:/Users/matt/Library/Python/3.8/bin
 PATH=$PATH:/Users/matt/Library/Python/3.7/bin
-PATH="$PATH:/usr/local/opt/python@3.8/bin/python3"
-PATH="$PATH:/usr/local/opt/python@3.8/bin/pip3"
+# PATH="$PATH:/usr/local/opt/python@3.8/bin/python3"
+# PATH="$PATH:/usr/local/opt/python@3.8/bin/pip3"
+PATH="$PATH:/usr/local/opt/python@3.8/bin/"
 # export PYTHONSTARTUP="$HOME/Prefs/pythonstartup.py"
 PATH="/usr/local/sbin:$PATH"
 
@@ -18,6 +19,56 @@ fi
 ########################
 # EXPORTS
 export LIBREOFFICE="$HOME/Applications/LibreOffice.app"
+
+########################
+# S
+alias envs="aws-vault list"
+alias staging="aws-vault exec staging "
+
+alias kk="kubectl "
+alias klist="kubectl get pods -o wide "
+kon () {
+    pod="$1"; shift
+    kk exec --stdin --tty "$pod" -- "$@"
+}; export -f kon 1> /dev/null
+kdjango () {
+    kon "$1" python manage.py shell_plus
+}; export -f kdjango 1> /dev/null
+kdb () {
+    kon "$1" python manage.py dbshell
+}; export -f kdb 1> /dev/null
+kbash () {
+    kon "$1" /bin/bash
+}; export -f kshell 1> /dev/null
+kdiagram () {
+    models=${2:-"Organization,Membership,User,Service,OrgService,ServiceSetting,Identity"}
+    kon "$1" python manage.py graph_models -a -I "$models"
+}; export -f kdiagram 1> /dev/null
+alias kerd="kdiagram "
+
+dot-to-png () {
+    dot -Tpng "$1" -o "$1.png" \
+        && open "$1.png"
+}; export -f dot-to-png 1> /dev/null
+
+erd-diagram () {
+    # models=${1:-"Organization,Membership,User,Service,OrgService,ServiceSetting"}
+    models=${1:-"Organization,Membership,User,Token,Actor,Service,OrgService,ServiceSetting,Identity,Group,Permission,SlackChannelMap,DataHandle"}
+    # docker-compose run --rm queuer python manage.py graph_models -a -I "$models" --output output.dot \
+    docker-compose run --rm queuer python manage.py graph_models -a -I "$models" | pafter 6 | pbefore 1 > output.dot \
+        && dot -Tpng output.dot -o output.png \
+        && open output.png
+}; export -f erd-diagram 1> /dev/null
+
+prep-deploy () {
+    echo "[.] Activating sym-deploy repo" \
+        && osascript -l AppleScript ~/home/my-repos/AppleScripts/prep-deploy.scpt
+}; export -f prep-deploy 1> /dev/null
+
+# # asdf
+# # . $(brew --prefix asdf)/asdf.sh  # Fixes: https://github.com/asdf-vm/asdf/issues/607 ; encountered after laptop/setup
+# alias asd='. $(brew --prefix asdf)/asdf.sh && asdf '  # Fixes: https://github.com/asdf-vm/asdf/issues/607 ; encountered after laptop/setup
+
 
 ########################
 # NORTHEASTERN
@@ -345,11 +396,19 @@ psplit () { _psplit "${1:-}" "${2:-0}"; }; export -f psplit 1> /dev/null
 _preplace () { python -c "import sys;a,b,c=sys.argv[1:];c=int(c) or -1;print(sys.stdin.read().rstrip('\n').replace(a,b,c))" "$1" "$2" "$3"; }; export -f _preplace 1> /dev/null
 preplace () { _preplace "${1:-}" "${2:-}" "${3:-0}"; }; export -f preplace 1> /dev/null
 
+_pfilter () { python -c "import re,sys;a=sys.argv[1];print(re.sub('|'.join(re.escape(e) for e in a),'',sys.stdin.read().rstrip('\n')))" "$1"; }; export -f _pfilter 1> /dev/null
+pfilter () { _pfilter "${1:-}"; }; export -f pfilter 1> /dev/null
+
+_pbreak () { python -c "import re,sys;a=sys.argv[1];print(sys.stdin.read().rstrip('\n').replace(a, '\n'))" "$1"; }; export -f _pbreak 1> /dev/null
+pbreak () { _pbreak "${1:-}"; }; export -f pbreak 1> /dev/null
+
 # protip:  chain these ^ with "while read _ _ _"
 
 alias pfirst="head -n "
 alias plast="tail -n "
 pbetween () { pfirst "$2" | plast $(($2 - $1)); }; export -f pbetween 1> /dev/null
+pafter () { tail -n "+$((1+$1))" }; export -f pafter 1> /dev/null
+pbefore () { python -c "import collections,itertools,sys;b=int(sys.argv[1]);d=collections.deque(maxlen=b);[d.append(l.rstrip()) for l in itertools.islice(sys.stdin,b)];[(print(d.popleft()),d.append(l.rstrip())) for l in sys.stdin]" "$1" }; export -f pbefore 1> /dev/null
 
 autoclick() {
     while (true); do doubleclick; done
