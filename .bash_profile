@@ -10,7 +10,10 @@ PATH="/usr/local/sbin:$PATH"
 
 noerr='2>/dev/null '
 
+PAGER="less -S"
+
 # oh-my-zsh
+# FILE=~/.zshrc && test -f $FILE && source $FILE && echo "[+] ~/.zshrc"
 if [ ! -z "$ZSH_NAME" ]; then
 	unalias -m '*'
 	echo "[+] Unaliased ZSH items"
@@ -39,7 +42,7 @@ kdb () {
 }; export -f kdb 1> /dev/null
 kbash () {
     kon "$1" /bin/bash
-}; export -f kshell 1> /dev/null
+}; export -f kbash 1> /dev/null
 kdiagram () {
     models=${2:-"Organization,Membership,User,Service,OrgService,ServiceSetting,Identity"}
     kon "$1" python manage.py graph_models -a -I "$models"
@@ -55,7 +58,7 @@ erd-diagram () {
     # models=${1:-"Organization,Membership,User,Service,OrgService,ServiceSetting"}
     models=${1:-"Organization,Membership,User,Token,Actor,Service,OrgService,ServiceSetting,Identity,Group,Permission,SlackChannelMap,DataHandle"}
     # docker-compose run --rm queuer python manage.py graph_models -a -I "$models" --output output.dot \
-    docker-compose run --rm queuer python manage.py graph_models -a -I "$models" | pafter 6 | pbefore 1 > output.dot \
+    docker-compose run --rm queuer python manage.py graph_models -a -I "$models" | paftern 6 | pbeforen 1 > output.dot \
         && dot -Tpng output.dot -o output.png \
         && open output.png
 }; export -f erd-diagram 1> /dev/null
@@ -114,8 +117,7 @@ split-on-n () {
 
 stem () {
     filename=$(basename -- "$1")
-    stem_="${filename%.*}"
-    echo $stem_
+    echo "${filename%.*}"
 }; export -f stem 1> /dev/null
 
 ext () {
@@ -173,9 +175,13 @@ rextension () {
     done
 }; export -f rextension 1> /dev/null
 
+# diffs and patches
+alias diff-patch='diff -Naru '  # https://unix.stackexchange.com/questions/162131/is-this-a-good-way-to-create-a-patch
+
 # OpenSSL / LibreSSL
 alias systemssl='/usr/bin/openssl '
-alias libressl='/usr/local/Cellar/libressl/3.2.2/bin/openssl '
+alias libressl='/usr/local/Cellar/libressl/3.3.3/bin/openssl '
+# alias libressl='/usr/local/Cellar/libressl/3.2.2/bin/openssl '
 # alias libressl='/usr/local/Cellar/libressl/2.9.2/bin/openssl '
 alias openssl='libressl '
 
@@ -225,6 +231,36 @@ crop () {
 crop-square-left () { ffmpeg -i "$1" -vf "crop='min(iw,ih):min(iw,ih):0:0'" "`dirname $1`/left-`basename $1`"; }; export -f crop-square-left 1> /dev/null
 crop-square-center () { ffmpeg -i "$1" -vf "crop='min(iw,ih):min(iw,ih):max((iw-ih)/2,0):max((ih-iw)/2,0)'" "`dirname $1`/center-`basename $1`"; }; export -f crop-square-center 1> /dev/null
 crop-square-right () { ffmpeg -i "$1" -vf "crop='min(iw,ih):min(iw,ih):max(iw-ih,0):max(ih-iw,0)'" "`dirname $1`/right-`basename $1`"; }; export -f crop-square-right 1> /dev/null
+
+### concatenation
+concat-videos () {
+    # Requires ffmpeg
+    # Files must be .mp4
+    vid1="$1"
+    vid2="$2"
+
+    vid1stem=`stem ${vid1}`
+    vid2stem=`stem ${vid2}`
+    outname="${vid1stem}_${vid2stem}.mp4"
+
+    echo "[ ] Concatenating `basename $vid1` and `basename $vid2` ..."
+
+    mkdir -p temp
+    cp "${vid1}" temp
+    cp "${vid2}" temp
+    cd temp
+
+    echo "file ${vid1stem}.mp4" >> concat.txt
+    echo "file ${vid2stem}.mp4" >> concat.txt
+    ffmpeg -f concat -i concat.txt -c copy "${outname}" -loglevel error
+    rm concat.txt
+
+    cd ..
+    cp "temp/${outname}" .
+    rm -r temp
+
+    echo "[+] Wrote ${outname}"
+}; export -f concat-videos 1> /dev/null
 
 ### screen capture
 devices () { ffmpeg -f avfoundation -list_devices true -i ""; }; export -f devices 1> /dev/null
@@ -336,7 +372,8 @@ WWW_HOME='http://www.google.com/'
 export WWW_HOME
 
 ### python
-alias p='python3.9 '
+# alias p='python3.9 '
+alias p='python '
 alias pver='p --version'
 alias pdoc='pydoc -w ./'
 # (pip2 provided by brew-python2)
@@ -352,7 +389,7 @@ alias pipfr3='pip3.9 freeze > requirements.txt'
 pipit2 () { PYTHONUSERBASE="$2" pip2 install "$1"; }; export -f pipit2 1> /dev/null  # "pipit = PIP Install Target"
 pipit3 () { PYTHONUSERBASE="$2" pip3.9 install "$1"; }; export -f pipit3 1> /dev/null
 
-alias pip='pip3.9'  # <-- personal favorite
+# alias pip='pip3.9'  # <-- personal favorite
 alias pipi='pipi3'  # <-- personal favorite
 alias pipir='pipir3'  # <-- personal favorite
 alias pipf='pipf3'  # <-- personal favorite
@@ -402,13 +439,24 @@ pfilter () { _pfilter "${1:-}"; }; export -f pfilter 1> /dev/null
 _pbreak () { python -c "import re,sys;a=sys.argv[1];print(sys.stdin.read().rstrip('\n').replace(a, '\n'))" "$1"; }; export -f _pbreak 1> /dev/null
 pbreak () { _pbreak "${1:-}"; }; export -f pbreak 1> /dev/null
 
+_pbefore () { python -c "import sys;a=sys.argv[1];print(sys.stdin.read().split(a)[0])" "$1"; }; export -f _pbefore 1> /dev/null
+pbefore () { _pbefore "${1:-}"; }; export -f pbefore 1> /dev/null
+
+_pafter () { python -c "import sys;a=sys.argv[1];print(sys.stdin.read().split(a)[-1])" "$1"; }; export -f _pbefore 1> /dev/null
+pafter () { _pafter "${1:-}"; }; export -f pafter 1> /dev/null
+
+slugify () {
+    echo "$@" | python "${HOME}/home/mine/slugify.py"
+}; export -f slugify 1>/dev/null
+alias slug="slugify "
+
 # protip:  chain these ^ with "while read _ _ _"
 
-alias pfirst="head -n "
-alias plast="tail -n "
-pbetween () { pfirst "$2" | plast $(($2 - $1)); }; export -f pbetween 1> /dev/null
-pafter () { tail -n "+$((1+$1))" }; export -f pafter 1> /dev/null
-pbefore () { python -c "import collections,itertools,sys;b=int(sys.argv[1]);d=collections.deque(maxlen=b);[d.append(l.rstrip()) for l in itertools.islice(sys.stdin,b)];[(print(d.popleft()),d.append(l.rstrip())) for l in sys.stdin]" "$1" }; export -f pbefore 1> /dev/null
+alias pfirstn="head -n "
+alias plastn="tail -n "
+pbetweenn () { pfirstn "$2" | plastn $(($2 - $1)); }; export -f pbetweenn 1> /dev/null
+paftern () { tail -n "+$((1+$1))" }; export -f paftern 1> /dev/null
+pbeforen () { python -c "import collections,itertools,sys;b=int(sys.argv[1]);d=collections.deque(maxlen=b);[d.append(l.rstrip()) for l in itertools.islice(sys.stdin,b)];[(print(d.popleft()),d.append(l.rstrip())) for l in sys.stdin]" "$1" }; export -f pbeforen 1> /dev/null
 
 autoclick() {
     while (true); do doubleclick; done
@@ -440,6 +488,12 @@ alias dv='d'
 ### mac/darwin
 alias shhh='pmset displaysleepnow'
 alias deepsleep='pmset sleepnow'
+alias show-hidden-files='defaults write com.apple.finder AppleShowAllFiles YES'
+alias hide-hidden-files='defaults write com.apple.finder AppleShowAllFiles NO'
+
+### mac + chrome
+alias show-tabs="osascript -e{'set text item delimiters to linefeed','tell app\"google chrome\"to url of tabs of window 1 as text'}"
+alias save-tabs="show-tabs | tee -a tabs.txt | wc -l | xargs printf '[+] Saved %s tabs to tabs.txt.\n' && echo "" >> tabs.txt"
 
 ### shortcuts
 alias l='ls -al'
@@ -460,6 +514,14 @@ alias json='python -m json.tool'
 alias rmpyc='find . -name \*.pyc -delete'
 alias encoding='file -I'
 alias beep="echo -e '\a'"
+
+totp () {
+    if [ $# -eq 0 ]; then
+        ~/home/mine/PyOTP/run
+    else
+        echo "$1" | base64 -d | ~/home/mine/PyOTP/run
+    fi
+}; export -f totp 1> /dev/null
 
 ### youtube
 yt () {
@@ -520,10 +582,11 @@ alias gitname='basename `git rev-parse --show-toplevel`'
 
 # show
 alias gitb='git branch --list'  # git branch(es)
+alias gitba='git branch --list --all'
 alias gitbl='git blame'
 alias gitd='git diff'
 alias gitds='git diff --staged'
-alias gitdl='git diff HEAD~1'  # git diff last
+alias gitdl='git diff HEAD~1 HEAD'  # git diff last
 alias gits='git status'
 alias gitsh='git show '
 alias gitt='git tag --list'  # git tag(s)
@@ -587,6 +650,8 @@ gitaheadbehind () {
         echo "$local $TEXT $remote"
     done
 }; export -f gitaheadbehind 1> /dev/null
+gitforked () { parentBranch="$1"; currentBranch=`git rev-parse --abbrev-ref HEAD`; git merge-base $parentBranch $currentBranch }; export -f gitforked 1> /dev/null
+gitsince () { parentBranch="$1"; currentBranch=`git rev-parse --abbrev-ref HEAD`; hash=`gitforked "$1"`; git diff --name-only "$1" $hash }; export -f gitsince 1> /dev/null
 
 # modify
 alias gitaa='git add .'
@@ -646,11 +711,14 @@ alias nbpp='nano ~/.bash_profile_private'
 alias sbpp='subl ~/.bash_profile_private'
 alias nbpr='nano ~/.bash_profile_racap'
 alias sbpr='subl ~/.bash_profile_racap'
+alias nbpn='nano ~/.bash_profile_numerated'
+alias sbpn='subl ~/.bash_profile_numerated'
 alias nbprp='nano ~/.bash_profile_racap_personal'
 alias sbprp='subl ~/.bash_profile_racap_personal'
 FILE=~/.bash_profile_private && test -f $FILE && source $FILE && echo "[+] ~/.bash_profile_private"
 FILE=~/.bash_profile_hubspot && test -f $FILE && source $FILE && echo "[+] ~/.bash_profile_hubspot"
 FILE=~/.bash_profile_racap && test -f $FILE && source $FILE && echo "[+] ~/.bash_profile_racap"
+FILE=~/.bash_profile_numerated && test -f $FILE && source $FILE && echo "[+] ~/.bash_profile_numerated"
 
 _gitkey () {
     local key="$1"
