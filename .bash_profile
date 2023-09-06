@@ -15,8 +15,9 @@ PAGER="less -S"
 # oh-my-zsh
 # FILE=~/.zshrc && test -f $FILE && source $FILE && echo "[+] ~/.zshrc"
 if [ ! -z "$ZSH_NAME" ]; then
-	unalias -m '*'
-	echo "[+] Unaliased ZSH items"
+    unalias -m '*'
+    unalias -m g
+    echo "[+] Unaliased ZSH items"
 fi
 
 ########################
@@ -205,6 +206,7 @@ alias nbp='nano ~/.bash_profile'
 alias vbp='vi ~/.bash_profile'
 alias sbp='subl ~/.bash_profile'
 alias snet='subl ~/.netrc'
+alias s.='subl .'
 
 ### network
 alias listnetworks='networksetup -listallhardwareports'
@@ -218,6 +220,14 @@ alias wayback='wayback_machine_downloader'
 ### cracking
 alias hc='hashcat'
 alias hch='hc --help'
+
+### File archiving/compression
+# files/folders
+alias xzip='tar -Jcvf '  # FOO.tar.xz
+alias bzip='tar -jcvf '  # FOO.tar.bz
+# alias gzip  # taken, just use tar -zcvf
+# images
+alias pngcomp='pngcrush -rem alla -nofilecheck -reduce -m 7 '
 
 ### cropping
 crop () {
@@ -236,6 +246,7 @@ crop-square-right () { ffmpeg -i "$1" -vf "crop='min(iw,ih):min(iw,ih):max(iw-ih
 concat-videos () {
     # Requires ffmpeg
     # Files must be .mp4
+    # TODO(mcotton): This fails if framerates mismatch!
     vid1="$1"
     vid2="$2"
 
@@ -250,9 +261,11 @@ concat-videos () {
     cp "${vid2}" temp
     cd temp
 
-    echo "file ${vid1stem}.mp4" >> concat.txt
-    echo "file ${vid2stem}.mp4" >> concat.txt
-    ffmpeg -f concat -i concat.txt -c copy "${outname}" -loglevel error
+    vid1stemwitheescapedspaces=${vid1stem//" "/"\\\\ "}
+    vid2stemwitheescapedspaces=${vid2stem//" "/"\\\\ "}
+    echo "file ${vid1stemwitheescapedspaces}.mp4" >> concat.txt
+    echo "file ${vid2stemwitheescapedspaces}.mp4" >> concat.txt
+    ffmpeg -f concat -safe 0 -i concat.txt -c copy "${outname}" -loglevel error
     rm concat.txt
 
     cd ..
@@ -261,6 +274,99 @@ concat-videos () {
 
     echo "[+] Wrote ${outname}"
 }; export -f concat-videos 1> /dev/null
+
+
+concat-all-videos () {
+    # Requires ffmpeg
+    # Files must be .mp4
+    # TODO(mcotton): This fails if framerates mismatch!
+    vids=($@)
+
+    mkdir -p temp
+    for vid in $vids; do
+        cp "${vid}" temp
+    done
+    cd temp
+
+    for vid in $vids; do
+        vidstem=`stem ${vid}`
+        vidstemwitheescapedspaces=${vidstem//" "/"\\\\ "}
+        echo "file ${vidstemwitheescapedspaces}.mp4" >> concat.txt
+    done
+
+    outname="out.mp4"
+    ffmpeg -f concat -safe 0 -i concat.txt -c copy "${outname}" -loglevel error
+
+    cd ..
+    cp "temp/${outname}" .
+    rm -r temp
+
+    echo "[+] Wrote ${outname}"
+}; export -f concat-all-videos 1> /dev/null
+
+
+concat-all-videos-sound-only () {
+    # Requires ffmpeg
+    # Files must be .mp4
+    vids=($@)
+
+    mkdir -p temp
+    i=0
+    for vid in $vids; do
+        cp "${vid}" "temp/${i}.mp4"
+        i=$((i+1))
+    done
+
+    i=0
+    for vid in $vids; do
+        # vidstem=`stem ${vid}`
+        # vidstem=${vidstem//" "/"\\\\ "}  # Escape spaces
+        # vidstem=${vidstem//"["/"\\["}  # Escape left brackets
+        # vidstem=${vidstem//"]"/"\\]"}  # Escape left brackets
+        echo "file ${i}.mp4" >> temp/concat.txt
+        i=$((i+1))
+    done
+
+    outname="out.m4a"
+
+    cd temp
+    ffmpeg -f concat -safe 0 -i concat.txt -vn -c:a copy "${outname}" -loglevel error
+    cd ..
+
+    cp "temp/${outname}" .
+    rm -r temp
+
+    echo "[+] Wrote ${outname}"
+}; export -f concat-all-videos-sound-only 1> /dev/null
+
+concat-all-audio () {
+    # Requires ffmpeg
+    # Files must be .mp3
+    # TODO(mcotton): This fails if framerates mismatch!
+    vids=($@)
+
+    mkdir -p temp
+    for vid in $vids; do
+        cp "${vid}" temp
+    done
+    cd temp
+
+    for vid in $vids; do
+        vidstem=`stem ${vid}`
+        vidstemwitheescapedspaces=${vidstem//" "/"\\\\ "}
+        echo "file ${vidstemwitheescapedspaces}.mp3" >> concat.txt
+    done
+
+    outname="out.mp3"
+    ffmpeg -f concat -safe 0 -i concat.txt -c copy "${outname}" -loglevel error
+
+    cd ..
+    cp "temp/${outname}" .
+    rm -r temp
+
+    echo "[+] Wrote ${outname}"
+}; export -f concat-all-audio 1> /dev/null
+
 
 ### screen capture
 devices () { ffmpeg -f avfoundation -list_devices true -i ""; }; export -f devices 1> /dev/null
@@ -291,6 +397,10 @@ vid-to-gif () {
 }; export -f vid-to-gif 1> /dev/null
 vid-to-mp4 () { ffmpeg -i "$1" "$1.mp4"; }; export -f vid-to-mp4 1> /dev/null
 gif-to-mp4 () { ffmpeg -i "$1" -movflags faststart -pix_fmt yuv420p -vf "scale=trunc(iw/2)*2:trunc(ih/2)*2" "$1.mp4"; }; export -f gif-to-mp4 1> /dev/null
+# frames-to-sequence-lossless () {
+#     # ffmpeg -framerate 10 -i %d.png -c:v copy output.mkv
+#     # ffmpeg -i output.mkv %d.png
+# }
 frames-to-mp4 () {
     # ARG 1: 60
     # ARG 2: 256x256
@@ -374,6 +484,19 @@ export WWW_HOME
 ### python
 # alias p='python3.9 '
 alias p='python '
+pm () {
+    p -m `_pm "$1"`
+}; export -f pm 1> /dev/null
+pim () {
+    p -im `_pm "$1"`
+}; export -f pim 1> /dev/null
+_pm () {
+    filepath="$1"
+    without_common_root="${filepath#`pwd`/}"
+    without_py="${without_common_root%.py}"
+    with_dots="${without_py//\//.}"
+    echo "$with_dots"
+}; export -f _pm 1> /dev/null
 alias pver='p --version'
 alias pdoc='pydoc -w ./'
 # (pip2 provided by brew-python2)
@@ -454,7 +577,7 @@ alias slug="slugify "
 
 alias pfirstn="head -n "
 alias plastn="tail -n "
-pbetweenn () { pfirstn "$2" | plastn $(($2 - $1)); }; export -f pbetweenn 1> /dev/null
+pbetween () { pfirstn "$2" | plastn $(($2 - $1)); }; export -f pbetween 1> /dev/null
 paftern () { tail -n "+$((1+$1))" }; export -f paftern 1> /dev/null
 pbeforen () { python -c "import collections,itertools,sys;b=int(sys.argv[1]);d=collections.deque(maxlen=b);[d.append(l.rstrip()) for l in itertools.islice(sys.stdin,b)];[(print(d.popleft()),d.append(l.rstrip())) for l in sys.stdin]" "$1" }; export -f pbeforen 1> /dev/null
 
@@ -555,6 +678,10 @@ alias iwillfindyou='find / -name'
 cdd () { cd "`dirname "$1"`"; }; export -f cdd 1> /dev/null
 alias wgeta='wget --header="Accept: text/html" --user-agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10.8; rv:21.0) Gecko/20100101 Firefox/21.0"'
 alias curlj='curl -H "Content-Type: application/json"'
+g () {
+    payload="{\"url\": \"$1\"}"
+    curlj "http://10.0.1.11:11021/ytd" -d $payload
+}; export -f g 1> /dev/null
 
 ### markdown
 md () { markdown "$1" > "$1".html || echo "Must `brew install markdown`!"; }; export -f md 1> /dev/null
@@ -581,7 +708,8 @@ alias gitpath='git rev-parse --show-toplevel'
 alias gitname='basename `git rev-parse --show-toplevel`'
 
 # show
-alias gitb='git branch --list'  # git branch(es)
+# alias gitb='git branch --list'  # git branch(es)
+alias gitb="git for-each-ref --sort=committerdate refs/heads/ --format='%(HEAD) %(color:red)%(objectname:short)%(color:reset) - %(color:yellow)%(refname:short)%(color:reset) %(contents:subject) - %(authorname) (%(color:green)%(committerdate:relative)%(color:reset))'"
 alias gitba='git branch --list --all'
 alias gitbl='git blame'
 alias gitd='git diff'
@@ -592,6 +720,7 @@ alias gitsh='git show '
 alias gitt='git tag --list'  # git tag(s)
 alias gitw='git whatchanged'
 alias git_current_branch='git rev-parse --abbrev-ref HEAD'
+alias gdiff='git diff -U0 --word-diff --no-index -- '
 
 ########################################
 #           special git logs           #
@@ -617,6 +746,7 @@ alias _gitlp='git log --date=short --pretty=format:"%C(yellow)%h %Cred%ad %Cblue
 alias gitlf='_gitlp '  # flat
 alias gitlh='_gitlp --graph '  # here
 alias gitla='_gitlp --graph --all '  # all
+alias gitlr='_gitlp --graph --remotes '  # remotes
 
 alias y='--since=1.day.ago '
 alias lw='--since=last.week '
@@ -652,12 +782,23 @@ gitaheadbehind () {
 }; export -f gitaheadbehind 1> /dev/null
 gitforked () { parentBranch="$1"; currentBranch=`git rev-parse --abbrev-ref HEAD`; git merge-base $parentBranch $currentBranch }; export -f gitforked 1> /dev/null
 gitsince () { parentBranch="$1"; currentBranch=`git rev-parse --abbrev-ref HEAD`; hash=`gitforked "$1"`; git diff --name-only "$1" $hash }; export -f gitsince 1> /dev/null
+gitdsince () {
+    newBranch="$1"
+    oldBranch="$2"
+    latestCommonAncestor=`git merge-base $oldBranch $newBranch`
+    git diff $latestCommonAncestor $newBranch
+}; export -f gitdsince 1>/dev/null
+gitwhowrote () {
+    string="$1"
+    git log -S "${string}" --source --all
+}; export -f gitwhowrote 1>/dev/null
 
 # modify
 alias gitaa='git add .'
 alias gitau='git add -u'
 alias gitbr='git branch'
 alias gitcom='git commit'
+alias gitcon='git commit --no-verify'
 alias gitcoma='git commit --amend'
 alias gitch='git checkout'
 gitchi () { git checkout -b "$1" "origin/$1"; }; export -f gitchi 1> /dev/null
@@ -686,6 +827,7 @@ alias gitsuir="git submodule update --init --recursive"
 gitsuto () { git branch --set-upstream-to="origin/$1" "$2"; }; export -f gitsuto 1> /dev/null
 alias ithinkibrokesomething='git reset --soft HEAD~1'
 alias ijustbrokeeverything='git reset --hard origin/master && git pull origin master'
+alias gitundo="git reset --soft HEAD@{1} "  # Great for undoing a `gitcoma`
 
 alias gpcb='gitpcb'  # <-- frequent usage
 alias gpoh='gitpoh'  # <-- frequent usage
