@@ -862,22 +862,22 @@ FILE=~/.bash_profile_hubspot && test -f $FILE && source $FILE && echo "[+] ~/.ba
 FILE=~/.bash_profile_racap && test -f $FILE && source $FILE && echo "[+] ~/.bash_profile_racap"
 FILE=~/.bash_profile_numerated && test -f $FILE && source $FILE && echo "[+] ~/.bash_profile_numerated"
 
-_gitkey () {
-    local key="$1"
-    shift 2  # remove the "git" from the now-expanded passed command
-    git -c core.sshCommand="ssh -i ~/.ssh/$key" $@
-}; export -f _gitkey 1> /dev/null
+# _gitkey () {
+#     local key="$1"
+#     shift 2  # remove the "git" from the now-expanded passed command
+#     git -c core.sshCommand="ssh -i ~/.ssh/$key" $@
+# }; export -f _gitkey 1> /dev/null
 
-_gitkeyexperiment () {
-    local key="$1"
-    local name="$2"
-    local email="$3"
-    shift 4  # remove the "git" from the now-expanded passed command
-    git -c core.sshCommand="ssh -i ~/.ssh/$key" -c user.name="$name" -c user.email="$email" $@
-}; export -f _gitkeyexperiment 1> /dev/null
+# _gitkeyexperiment () {
+#     local key="$1"
+#     local name="$2"
+#     local email="$3"
+#     shift 4  # remove the "git" from the now-expanded passed command
+#     git -c core.sshCommand="ssh -i ~/.ssh/$key" -c user.name="$name" -c user.email="$email" $@
+# }; export -f _gitkeyexperiment 1> /dev/null
 
-alias gitkey1='_gitkey id_rsa '
-alias gitkey2='_gitkey id_rsa_github_mattccs '
+# alias gitkey1='_gitkey id_rsa '
+alias gitkey2='GIT_SSH_COMMAND="ssh -i ~/.ssh/id_rsa_mattccs_github -o IdentitiesOnly=yes" '
 
 [[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm" # Load RVM into a shell session *as a function*
 
